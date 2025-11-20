@@ -57,10 +57,14 @@ const HistoryDashboard: React.FC<HistoryDashboardProps> = ({ onEditEntry }) => {
 
   const confirmDelete = async () => {
     if (entryToDelete) {
-      await deleteEntry(entryToDelete.id);
-      const newEntries = entries.filter(e => e.id !== entryToDelete.id);
+      // Delete using date as ID
+      await deleteEntry(entryToDelete.date);
+      const newEntries = entries.filter(e => e.date !== entryToDelete.date);
       setEntries(newEntries);
-      setFilteredEntries(newEntries); // Update filtered list too
+      setFilteredEntries(newEntries.filter(e => 
+        !searchTerm || 
+        e.narrative.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
       setEntryToDelete(null);
     }
   };
@@ -73,7 +77,11 @@ const HistoryDashboard: React.FC<HistoryDashboardProps> = ({ onEditEntry }) => {
   };
 
   if (loadingData) {
-    return <div className="flex items-center justify-center py-20 text-apple-gray">Unlocking Secure Vault...</div>;
+    return (
+        <div className="flex items-center justify-center py-20 text-apple-gray animate-pulse">
+            Unlocking Secure Index...
+        </div>
+    );
   }
 
   return (
@@ -172,7 +180,7 @@ const HistoryDashboard: React.FC<HistoryDashboardProps> = ({ onEditEntry }) => {
              
              return (
               <div 
-                key={entry.id} 
+                key={entry.date} 
                 onClick={() => onEditEntry(entry.date)}
                 className="group bg-white border border-transparent hover:border-gray-200 hover:shadow-apple rounded-2xl p-4 cursor-pointer transition-all duration-300 flex items-start justify-between"
               >

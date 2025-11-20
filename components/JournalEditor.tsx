@@ -56,10 +56,12 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
   }, [initialDate]);
 
   // Auto-save logic
+  // Note: We use a ref or callback logic here. The Atomic save is fast enough 
+  // that we don't need complex queues, just a simple debounce.
   const saveData = useCallback(async () => {
     setSaveStatus('saving');
     const entry: JournalEntry = {
-      id: date,
+      id: date, // ID corresponds to date in our atomic system
       date,
       timestamp: Date.now(),
       narrative,
@@ -68,25 +70,27 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
       planForTomorrow: plan,
       tags,
       aiSummary: aiInsight,
-      encrypted: true // Flag to indicate this is secure
+      encrypted: true 
     };
 
     await saveEntry(entry);
     
+    // Provide just enough delay to show the user something happened, but don't block
     setTimeout(() => {
       setSaveStatus('saved');
       onSave(); 
-    }, 500);
+    }, 300);
   }, [date, narrative, rating, reasoning, plan, tags, aiInsight, onSave]);
 
   // Debounce auto-save
   useEffect(() => {
     if (loading) return;
     const timer = setTimeout(() => {
-      if (narrative || reasoning || plan || rating !== null) {
+      // Only save if there is SOME data
+      if (narrative || reasoning || plan || rating !== null || tags.length > 0) {
         saveData();
       }
-    }, 2000); // Slightly longer delay for rich text
+    }, 1500); 
 
     return () => clearTimeout(timer);
   }, [narrative, reasoning, plan, rating, tags, aiInsight, saveData, loading]);
@@ -96,7 +100,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
   };
 
   const handleGenerateInsight = async () => {
-    if (rating === null || (!narrative && !reasoning)) return;
+    if (rating === null && !narrative && !reasoning && !plan) return;
 
     setIsGenerating(true);
     const entry: JournalEntry = {
@@ -104,7 +108,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
       date,
       timestamp: Date.now(),
       narrative,
-      rating,
+      rating: rating || 0,
       reasoning,
       planForTomorrow: plan,
       tags
@@ -113,7 +117,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
     const insight = await generateInsight(entry);
     setAiInsight(insight);
     
-    // Save immediately
+    // Save immediately with new insight
     entry.aiSummary = insight;
     entry.encrypted = true;
     await saveEntry(entry);
@@ -122,9 +126,9 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
   };
 
   // Handlers for Voice Transcription Append
-  const appendNarrative = (text: string) => setNarrative(prev => prev + text);
-  const appendReasoning = (text: string) => setReasoning(prev => prev + text);
-  const appendPlan = (text: string) => setPlan(prev => prev + text);
+  const appendNarrative = useCallback((text: string) => setNarrative(prev => prev + text), []);
+  const appendReasoning = useCallback((text: string) => setReasoning(prev => prev + text), []);
+  const appendPlan = useCallback((text: string) => setPlan(prev => prev + text), []);
 
   if (loading) {
     return <div className="flex items-center justify-center h-64 text-apple-gray">Loading encrypted entries...</div>;
@@ -140,16 +144,16 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
     <div className="w-full pb-32 animate-fade-in">
       
       {/* Status Indicator */}
-      <div className="fixed top-4 right-4 z-40 flex items-center gap-3">
+      <div className="fixed top-4 right-4 z-40 flex items-center gap-3 pointer-events-none">
          {/* Security Badge */}
-         <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">
+         <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100 opacity-80">
             <ShieldCheck className="w-3 h-3" />
             <span>AES-GCM Encrypted</span>
          </div>
          
          <span className={`
            text-xs font-medium px-3 py-1.5 rounded-full border transition-all duration-300
-           ${saveStatus === 'saving' ? 'bg-white text-blue-600 border-blue-100 shadow-sm' : 'opacity-0'}
+           ${saveStatus === 'saving' ? 'bg-white text-blue-600 border-blue-100 shadow-sm opacity-100' : 'opacity-0'}
          `}>
            Saving...
          </span>
@@ -293,7 +297,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
            {!aiInsight && (
              <button
                onClick={handleGenerateInsight}
-               disabled={isGenerating || !narrative}
+               disabled={isGenerating || (!narrative && !rating && !reasoning && !plan)}
                className="
                  flex items-center gap-2 pl-4 pr-5 py-3 bg-apple-text text-white rounded-full 
                  shadow-float hover:shadow-lg hover:-translate-y-0.5 transition-all

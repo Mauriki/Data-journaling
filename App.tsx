@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import JournalEditor from './components/JournalEditor';
 import HistoryDashboard from './components/HistoryDashboard';
 import { Book, BarChart2, Flame } from 'lucide-react';
-import { getStreak } from './services/storageService';
+import { getStreak, runMigration } from './services/storageService';
 
 type View = 'journal' | 'history';
 
@@ -10,15 +10,29 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('journal');
   const [editDate, setEditDate] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
+  const [isReady, setIsReady] = useState(false);
+
+  // Startup: Run migration and load streak
+  useEffect(() => {
+    const init = async () => {
+      await runMigration();
+      const s = await getStreak();
+      setStreak(s);
+      setIsReady(true);
+    };
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (isReady) {
+      updateStreak();
+    }
+  }, [currentView, isReady]);
 
   const updateStreak = async () => {
     const s = await getStreak();
     setStreak(s);
   };
-
-  useEffect(() => {
-    updateStreak();
-  }, [currentView]);
 
   const handleEditEntry = (date: string) => {
     setEditDate(date);
@@ -28,6 +42,14 @@ const App: React.FC = () => {
   const handleEntrySaved = () => {
     updateStreak();
   };
+
+  if (!isReady) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-apple-bg">
+        <div className="text-apple-gray text-sm font-medium animate-pulse">Optimizing Database...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-full flex flex-col bg-apple-bg relative">
@@ -65,7 +87,7 @@ const App: React.FC = () => {
 
         {/* Right: Streak Indicator */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-orange-600">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-orange-600 transition-all hover:scale-105 cursor-default">
             <Flame className={`w-4 h-4 ${streak > 0 ? 'fill-orange-500' : ''}`} />
             <span className="text-xs font-semibold tracking-wide">{streak} Day Streak</span>
           </div>

@@ -82,4 +82,5 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
   );
 };
 
-export default RichTextEditor;
+// Export as Memoized component to prevent parent re-renders from slowing down typing
+export default React.memo(RichTextEditor);
