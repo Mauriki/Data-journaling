@@ -98,7 +98,9 @@ export const generateWeeklyReview = async (entries: JournalEntry[]): Promise<str
     ).join('\n');
 
     const prompt = `
-      Analyze these journal entries.
+      Analyze these journal entries:
+      ${entriesText}
+
       Output a "Weekly Intelligence Briefing".
       - Trend: What is the trajectory of the user's week?
       - Pattern: Connect two dots between different days.

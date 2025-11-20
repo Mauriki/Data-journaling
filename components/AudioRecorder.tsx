@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Mic, Square, Loader2, Sparkles } from 'lucide-react';
+import { Mic, Sparkles } from 'lucide-react';
 import { transcribeAudio } from '../services/geminiService';
 
 interface AudioRecorderProps {

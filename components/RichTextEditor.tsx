@@ -70,12 +70,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
 
       <div
         ref={contentRef}
-        className="editor-content w-full bg-transparent text-lg text-apple-text leading-relaxed outline-none font-serif empty:before:content-[attr(placeholder)] empty:before:text-gray-300"
+        className="editor-content w-full bg-transparent text-lg text-apple-text leading-relaxed outline-none font-serif empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300"
         contentEditable
         onInput={handleInput}
         onFocus={() => setShowToolbar(true)}
         onBlur={() => setTimeout(() => setShowToolbar(false), 200)} // Delay to allow button clicks
-        placeholder={placeholder}
+        data-placeholder={placeholder}
         style={{ minHeight }}
       />
     </div>
