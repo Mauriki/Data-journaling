@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { X, Moon, Sun, LogOut, User, Cloud, Smartphone } from 'lucide-react';
+import { X, Moon, Sun, LogOut, Cloud, Smartphone } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
