@@ -1,0 +1,7 @@
+{
+  "name": "Data Journaling",
+  "description": "A paper-styled journaling application focusing on narrative, structured data, and analysis.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
