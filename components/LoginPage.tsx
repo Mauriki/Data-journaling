@@ -7,7 +7,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [unauthorizedDomain, setUnauthorizedDomain] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  
+
   // Email Auth State
   const [showEmailAuth, setShowEmailAuth] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -27,8 +27,8 @@ const LoginPage: React.FC = () => {
       setUnauthorizedDomain(null);
       await loginGoogle();
     } catch (err: any) {
-      const isUnauthorized = 
-        err?.code === 'auth/unauthorized-domain' || 
+      const isUnauthorized =
+        err?.code === 'auth/unauthorized-domain' ||
         err?.message?.includes('unauthorized-domain') ||
         String(err).includes('auth/unauthorized-domain');
 
@@ -36,7 +36,7 @@ const LoginPage: React.FC = () => {
         setUnauthorizedDomain(window.location.hostname);
         return;
       }
-      
+
       if (err?.code === 'auth/popup-closed-by-user') {
         setError("Sign-in cancelled.");
         return;
@@ -51,7 +51,7 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     setUnauthorizedDomain(null);
-    
+
     try {
       if (isSignUp) {
         await registerEmail(email, password);
@@ -59,15 +59,15 @@ const LoginPage: React.FC = () => {
         await loginEmail(email, password);
       }
     } catch (err: any) {
-      const isUnauthorized = 
-        err?.code === 'auth/unauthorized-domain' || 
+      const isUnauthorized =
+        err?.code === 'auth/unauthorized-domain' ||
         err?.message?.includes('unauthorized-domain');
 
       if (isUnauthorized) {
         setUnauthorizedDomain(window.location.hostname);
         return;
       }
-      
+
       setError(err?.message || "Authentication failed.");
     }
   };
@@ -81,9 +81,9 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-apple-bg dark:bg-zinc-900 text-apple-text dark:text-white p-4 transition-colors duration-500">
-      
+
       <div className="w-full max-w-md animate-fade-in">
-        
+
         {/* Logo Area */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white dark:bg-zinc-800 shadow-float mb-6">
@@ -97,30 +97,30 @@ const LoginPage: React.FC = () => {
 
         {/* Card */}
         <div className="bg-white/70 dark:bg-zinc-800/50 backdrop-blur-xl rounded-3xl p-8 shadow-apple border border-white/20 dark:border-white/5 overflow-hidden">
-          
+
           {/* UNAUTHORIZED DOMAIN ERROR - THE FIX */}
           {unauthorizedDomain && (
             <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 rounded-xl text-sm">
-               <div className="flex items-start gap-3 text-orange-800 dark:text-orange-200 mb-3">
-                  <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-                  <span className="font-bold">Action Required: Whitelist Domain</span>
-               </div>
-               <p className="text-orange-700 dark:text-orange-300 mb-3 leading-relaxed">
-                 Google blocked the login because this preview domain is not on your Firebase safe list.
-               </p>
-               <div className="bg-white/50 dark:bg-black/20 p-2 rounded mb-3 font-mono text-xs break-all border border-orange-200 dark:border-orange-800 text-center">
-                 {unauthorizedDomain}
-               </div>
-               <button 
-                 onClick={copyToClipboard}
-                 className="w-full flex items-center justify-center gap-2 bg-white dark:bg-black/40 border border-orange-200 dark:border-orange-800 p-2.5 rounded-lg text-orange-800 dark:text-orange-200 font-semibold text-xs hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors shadow-sm"
-               >
-                 {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                 {copied ? "Copied!" : "Copy Domain"}
-               </button>
-               <p className="mt-3 text-[11px] text-orange-600 dark:text-orange-400 text-center">
-                 Or use <strong>Guest Mode</strong> below to skip this.
-               </p>
+              <div className="flex items-start gap-3 text-orange-800 dark:text-orange-200 mb-3">
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                <span className="font-bold">Action Required: Whitelist Domain</span>
+              </div>
+              <p className="text-orange-700 dark:text-orange-300 mb-3 leading-relaxed">
+                Google blocked the login because this preview domain is not on your Firebase safe list.
+              </p>
+              <div className="bg-white/50 dark:bg-black/20 p-2 rounded mb-3 font-mono text-xs break-all border border-orange-200 dark:border-orange-800 text-center">
+                {unauthorizedDomain}
+              </div>
+              <button
+                onClick={copyToClipboard}
+                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-black/40 border border-orange-200 dark:border-orange-800 p-2.5 rounded-lg text-orange-800 dark:text-orange-200 font-semibold text-xs hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors shadow-sm"
+              >
+                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? "Copied!" : "Copy Domain"}
+              </button>
+              <p className="mt-3 text-[11px] text-orange-600 dark:text-orange-400 text-center">
+                Or use <strong>Guest Mode</strong> below to skip this.
+              </p>
             </div>
           )}
 
@@ -144,7 +144,7 @@ const LoginPage: React.FC = () => {
                   </>
                 )}
               </button>
-              
+
               <button
                 onClick={() => setShowEmailAuth(true)}
                 className="w-full flex items-center justify-center gap-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-apple-text dark:text-white font-medium py-4 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
@@ -170,7 +170,7 @@ const LoginPage: React.FC = () => {
             <form onSubmit={handleEmailAuth} className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
               <div>
                 <label className="block text-xs font-bold text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">Email Address</label>
-                <input 
+                <input
                   type="email" required value={email} onChange={e => setEmail(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="you@example.com"
@@ -178,7 +178,7 @@ const LoginPage: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">Password</label>
-                <input 
+                <input
                   type="password" required value={password} onChange={e => setPassword(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="••••••••"
@@ -210,15 +210,8 @@ const LoginPage: React.FC = () => {
             </span>
           </div>
         </div>
-        
-        {/* DISCREET NETWORK DIAGNOSTIC - USER REQUESTED */}
-        <div className="mt-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 text-[10px] text-gray-400">
-            <div className={`w-1.5 h-1.5 rounded-full ${window.location.hostname === 'localhost' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-            <span className="font-mono">Network: {window.location.hostname}</span>
-            {unauthorizedDomain && <span className="text-red-500 font-bold ml-1">(Blocked)</span>}
-          </div>
-        </div>
+
+
 
       </div>
     </div>

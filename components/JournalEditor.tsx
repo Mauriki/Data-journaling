@@ -16,16 +16,16 @@ interface JournalEditorProps {
 const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) => {
   const { isGuest } = useAuth();
   const [date, setDate] = useState(initialDate);
-  
+
   const [narrative, setNarrative] = useState('');
   const [rating, setRating] = useState<RatingValue | null>(null);
   const [reasoning, setReasoning] = useState('');
   const [plan, setPlan] = useState('');
-  
+
   const [aiInsight, setAiInsight] = useState<string | undefined>(undefined);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
-  
+
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [isGenerating, setIsGenerating] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -70,12 +70,17 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
       encrypted: isGuest // Only locally encrypted
     };
 
-    await saveEntry(entry);
-    
-    setTimeout(() => {
-      setSaveStatus('saved');
-      onSave(); 
-    }, 300);
+    try {
+      await saveEntry(entry);
+      setTimeout(() => {
+        setSaveStatus('saved');
+        onSave();
+      }, 300);
+    } catch (error) {
+      console.error("Failed to save entry:", error);
+      setSaveStatus('unsaved');
+      alert("Failed to save entry. Please check your connection.");
+    }
   }, [date, narrative, rating, reasoning, plan, tags, aiInsight, onSave, isGuest]);
 
   useEffect(() => {
@@ -84,7 +89,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
       if (narrative || reasoning || plan || rating !== null || tags.length > 0) {
         saveData();
       }
-    }, 1500); 
+    }, 1500);
     return () => clearTimeout(timer);
   }, [narrative, reasoning, plan, rating, tags, aiInsight, saveData, loading]);
 
@@ -115,23 +120,25 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
 
   return (
     <div className="w-full pb-32 animate-fade-in">
-      
+
       {/* Status Indicator */}
       <div className="fixed top-4 right-4 z-40 flex items-center gap-3 pointer-events-none">
-         <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full border opacity-80 ${isGuest ? 'text-green-600 bg-green-50 border-green-100' : 'text-blue-600 bg-blue-50 border-blue-100'}`}>
-            {isGuest ? <ShieldCheck className="w-3 h-3" /> : <Cloud className="w-3 h-3" />}
-            <span>{isGuest ? 'AES-GCM Encrypted' : 'Cloud Sync Active'}</span>
-         </div>
-         <span className={`text-xs font-medium px-3 py-1.5 rounded-full border bg-white dark:bg-zinc-800 dark:border-zinc-600 dark:text-white transition-all duration-300 ${saveStatus === 'saving' ? 'opacity-100' : 'opacity-0'}`}>Saving...</span>
+        <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full border opacity-80 ${isGuest ? 'text-green-600 bg-green-50 border-green-100' : 'text-blue-600 bg-blue-50 border-blue-100'}`}>
+          {isGuest ? <ShieldCheck className="w-3 h-3" /> : <Cloud className="w-3 h-3" />}
+          <span>{isGuest ? 'AES-GCM Encrypted' : 'Cloud Sync Active'}</span>
+        </div>
+        <span className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all duration-300 ${saveStatus === 'saving' ? 'opacity-100 bg-white dark:bg-zinc-800 dark:border-zinc-600 dark:text-white' : saveStatus === 'unsaved' ? 'opacity-100 bg-red-50 text-red-600 border-red-100' : 'opacity-0'}`}>
+          {saveStatus === 'saving' ? 'Saving...' : 'Save Failed'}
+        </span>
       </div>
 
       {/* Header */}
       <header className="mb-10 pb-6 border-b border-gray-200/60 dark:border-white/10">
         <div className="flex items-center gap-2 text-apple-gray dark:text-zinc-400 mb-1">
           <Calendar className="w-4 h-4" />
-          <input 
-            type="date" 
-            value={date} 
+          <input
+            type="date"
+            value={date}
             onChange={handleDateChange}
             className="bg-transparent border-none outline-none text-sm font-medium text-apple-gray dark:text-zinc-400 hover:text-apple-blue cursor-pointer uppercase tracking-wide"
           />
@@ -143,7 +150,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
 
       {/* Editor Sections */}
       <div className="space-y-12">
-        
+
         <section className="group">
           <div className="flex items-center justify-between mb-4">
             <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest">01 — Narrative</label>
@@ -156,8 +163,8 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
           <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest mb-6">02 — Analysis & Mood</label>
           <div className="mb-8"><RatingInput value={rating} onChange={setRating} /></div>
           <div className="flex items-center justify-between mb-3">
-             <span className="text-sm font-medium text-apple-gray dark:text-zinc-400">Reasoning</span>
-             <AudioRecorder onTranscriptionComplete={appendReasoning} />
+            <span className="text-sm font-medium text-apple-gray dark:text-zinc-400">Reasoning</span>
+            <AudioRecorder onTranscriptionComplete={appendReasoning} />
           </div>
           <RichTextEditor value={reasoning} onChange={setReasoning} placeholder="Analyze the drivers..." minHeight="80px" />
         </section>
@@ -174,8 +181,8 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 text-apple-gray dark:text-zinc-400 bg-gray-50 dark:bg-zinc-800 px-2 rounded-lg">
               <Tag className="w-4 h-4" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (() => { if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag(''); } })()}
@@ -189,22 +196,22 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
         </section>
 
         <section className="pt-8 flex justify-end">
-           {!aiInsight && (
-             <button
-               onClick={handleGenerateInsight}
-               disabled={isGenerating || (!narrative && !rating && !reasoning && !plan)}
-               className="flex items-center gap-2 pl-4 pr-5 py-3 bg-apple-text dark:bg-white text-white dark:text-black rounded-full shadow-float hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50"
-             >
-               {isGenerating ? <><ArrowRight className="w-4 h-4 animate-spin" /><span className="font-medium">Thinking...</span></> : <><Sparkles className="w-4 h-4" /><span className="font-medium">Generate Daily Summary</span></>}
-             </button>
-           )}
+          {!aiInsight && (
+            <button
+              onClick={handleGenerateInsight}
+              disabled={isGenerating || (!narrative && !rating && !reasoning && !plan)}
+              className="flex items-center gap-2 pl-4 pr-5 py-3 bg-apple-text dark:bg-white text-white dark:text-black rounded-full shadow-float hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50"
+            >
+              {isGenerating ? <><ArrowRight className="w-4 h-4 animate-spin" /><span className="font-medium">Thinking...</span></> : <><Sparkles className="w-4 h-4" /><span className="font-medium">Generate Daily Summary</span></>}
+            </button>
+          )}
         </section>
-        
+
         {aiInsight && (
-           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
-             <div className="flex items-center gap-2 mb-2 text-blue-600 dark:text-blue-400"><Sparkles className="w-4 h-4" /><span className="text-xs font-bold uppercase">Daily Intelligence</span></div>
-             <div className="prose prose-sm max-w-none text-apple-text dark:text-gray-200 font-serif">{aiInsight}</div>
-           </div>
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
+            <div className="flex items-center gap-2 mb-2 text-blue-600 dark:text-blue-400"><Sparkles className="w-4 h-4" /><span className="text-xs font-bold uppercase">Daily Intelligence</span></div>
+            <div className="prose prose-sm max-w-none text-apple-text dark:text-gray-200 font-serif">{aiInsight}</div>
+          </div>
         )}
       </div>
     </div>
