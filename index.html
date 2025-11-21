@@ -4,10 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Data Journaling</title>
-    <!-- Tailwind via CDN for simplicity, though configured in package.json for future builds -->
+    <!-- Tailwind via CDN for simplicity -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
@@ -17,7 +18,7 @@
             },
             colors: {
               apple: {
-                bg: '#F5F5F7', // Apple system background
+                bg: '#F5F5F7',
                 card: '#FFFFFF',
                 gray: '#86868b',
                 blue: '#0071e3',
@@ -46,23 +47,14 @@
       }
     </script>
     <style>
-      /* iOS-like scrollbar */
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       .glass {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
       }
-      
-      /* Rich Text Editor Styles */
       .ProseMirror p.is-editor-empty:first-child::before {
         color: #adb5bd;
         content: attr(data-placeholder);
@@ -70,11 +62,7 @@
         height: 0;
         pointer-events: none;
       }
-
-      .editor-content {
-        outline: none;
-        min-height: 100px;
-      }
+      .editor-content { outline: none; min-height: 100px; }
       .editor-content h1 { font-size: 1.8em; font-weight: 700; margin-bottom: 0.5em; letter-spacing: -0.02em; }
       .editor-content h2 { font-size: 1.4em; font-weight: 600; margin-bottom: 0.5em; letter-spacing: -0.01em; margin-top: 1em; }
       .editor-content ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
@@ -84,24 +72,23 @@
       .editor-content hr { border: none; border-top: 1px solid #e5e5e5; margin: 2em 0; }
       .editor-content blockquote { border-left: 3px solid #0071e3; padding-left: 1em; color: #666; font-style: italic; }
     </style>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-    "vite": "https://aistudiocdn.com/vite@^7.2.4",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "react": "https://aistudiocdn.com/react@^19.2.0",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
   }
 }
 </script>
 </head>
-  <body class="bg-apple-bg text-apple-text antialiased h-full selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
+  <body class="bg-apple-bg text-apple-text antialiased h-full selection:bg-blue-100 selection:text-blue-900 overflow-hidden transition-colors duration-500">
     <div id="root" class="h-full"></div>
-    <!-- Point to the Typescript entry point for Vite -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider } from '../firebase';
-import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { signInWithPopup, signOut, onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { migrateLocalToCloud } from '../services/storageService';
 
 interface AuthContextType {
@@ -9,6 +9,8 @@ interface AuthContextType {
   loading: boolean;
   darkMode: boolean;
   loginGoogle: () => Promise<void>;
+  loginEmail: (email: string, pass: string) => Promise<void>;
+  registerEmail: (email: string, pass: string) => Promise<void>;
   loginGuest: () => void;
   logout: () => Promise<void>;
   toggleDarkMode: () => void;
@@ -27,13 +29,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        setIsGuest(false);
+        setIsGuest(false); // Ensure guest mode is off if user is found
         
-        // Run migration: If user had local data, move it to cloud
+        // Run migration: If user had local data (from guest mode), move it to cloud
         await migrateLocalToCloud(currentUser.uid);
       } else {
         setUser(null);
-        // We don't automatically set isGuest to true here to allow the Login screen to show
+        // Note: We don't force isGuest=true here, because we want the Login screen to appear
+        // unless the user manually clicked "Continue as Guest"
       }
       setLoading(false);
     });
@@ -67,8 +70,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error("Login failed", error);
+    } catch (error: any) {
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  const loginEmail = async (email: string, pass: string) => {
+    try {
+      setLoading(true);
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (error: any) {
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  const registerEmail = async (email: string, pass: string) => {
+    try {
+      setLoading(true);
+      await createUserWithEmailAndPassword(auth, email, pass);
+    } catch (error: any) {
       setLoading(false);
       throw error;
     }
@@ -79,13 +101,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await signOut(auth);
-    setUser(null);
-    setIsGuest(false);
+    try {
+      await signOut(auth);
+      setUser(null);
+      setIsGuest(false);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isGuest, loading, darkMode, loginGoogle, loginGuest, logout, toggleDarkMode }}>
+    <AuthContext.Provider value={{ user, isGuest, loading, darkMode, loginGoogle, loginEmail, registerEmail, loginGuest, logout, toggleDarkMode }}>
       {children}
     </AuthContext.Provider>
   );
