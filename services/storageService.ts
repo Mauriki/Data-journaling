@@ -99,8 +99,9 @@ export const saveEntry = async (entry: JournalEntry): Promise<void> => {
   if (user) {
     // CLOUD MODE
     try {
-      // Firestore saves objects directly, but we keep structure clean
-      await setDoc(doc(db, "users", user.uid, "entries", entry.date), entry);
+      // Firestore throws if fields are undefined. We must sanitize.
+      const sanitizedEntry = JSON.parse(JSON.stringify(entry));
+      await setDoc(doc(db, "users", user.uid, "entries", entry.date), sanitizedEntry);
     } catch (e) {
       console.error("Cloud save failed", e);
       throw e; // Re-throw to let UI know
