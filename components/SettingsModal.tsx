@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { X, Moon, Sun, LogOut, Cloud, Smartphone, AlertTriangle, CheckCircle2, Copy } from 'lucide-react';
+import { X, Moon, Sun, LogOut, Cloud, Smartphone, AlertTriangle, CheckCircle2, Copy, Download } from 'lucide-react';
+import { getEntries } from '../services/storageService';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [unauthorizedDomain, setUnauthorizedDomain] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -33,6 +35,28 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         console.error("Sync failed", err);
         setSyncError("Sync failed. Try again or use Email login on the main screen.");
       }
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const entries = await getEntries();
+      const dataStr = JSON.stringify(entries, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `journal_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export failed", error);
+      alert("Failed to export data.");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -141,6 +165,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Data Management */}
+          <div className="space-y-3">
+             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Data</label>
+             <button 
+               onClick={handleExport}
+               disabled={exporting}
+               className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
+             >
+               <div className="flex items-center gap-3">
+                 <Download className="w-5 h-5 text-green-600 dark:text-green-400" />
+                 <div className="text-left">
+                   <div className="font-medium text-apple-text dark:text-white">Export Data</div>
+                   <div className="text-xs text-gray-500 dark:text-gray-400">Download a backup of your journal</div>
+                 </div>
+               </div>
+               {exporting && <span className="text-xs text-gray-400">Processing...</span>}
+             </button>
           </div>
 
           {/* Preferences */}
