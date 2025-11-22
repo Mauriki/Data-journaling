@@ -12,7 +12,14 @@ const openai = API_KEY ? new OpenAI({
 }) : null;
 
 // Mock Data for Simulation Mode
-const MOCK_TRANSCRIPTION = "This is a simulated transcription. In simulation mode, audio is not sent to OpenAI. This text demonstrates how the transcription feature works in the UI. Try adding a valid API key to get real transcriptions!";
+const MOCK_TRANSCRIPTION = `### Simulated Transcription
+This is a **simulated transcription** to demonstrate the new formatting capabilities.
+
+*   **Structured Output**: The AI will now use bullet points like this.
+*   **Emphasis**: Important concepts will be **bolded**.
+*   **Readability**: The text is broken down into smaller chunks instead of a wall of text.
+
+Try adding a valid API key to see this in action with your own voice!`;
 
 const MOCK_INSIGHT = `* **Psychological Insight:** You seem to be testing the application's capabilities.
 * **Pattern:** You are currently using the simulation mode.
@@ -35,7 +42,7 @@ export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
         const response = await openai.audio.transcriptions.create({
             file: audioFile,
             model: "whisper-1",
-            prompt: "Transcribe this journal entry. Fix grammar and remove filler words like 'um' and 'ah'. Format with markdown if appropriate.",
+            prompt: "Transcribe this journal entry. Format the output using markdown to make it highly readable. Use bullet points, bold text for emphasis, and headers where appropriate to break down the narrative. If there are distinct topics, separate them clearly. Do not use large blocks of plain text.",
         });
 
         return response.text || "";

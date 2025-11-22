@@ -51,7 +51,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
     <div className="relative group">
       {/* Toolbar - Appears on hover/focus */}
       <div className={`
-        absolute -top-10 left-0 flex items-center gap-1 bg-white/90 backdrop-blur-md border border-gray-200 
+        absolute -top-12 left-0 flex items-center gap-1 bg-white/90 backdrop-blur-md border border-gray-200 
         rounded-lg shadow-apple px-2 py-1 transition-all duration-200 z-20
         ${showToolbar ? 'opacity-100 translate-y-0 visible' : 'opacity-0 translate-y-2 invisible group-hover:visible group-hover:opacity-100 group-hover:translate-y-0'}
       `}>
