@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyDfN8DoYPyJbVM3y3MWaFdz0mhrpqLFuZo",
   authDomain: "data-journaling.firebaseapp.com",
   projectId: "data-journaling",

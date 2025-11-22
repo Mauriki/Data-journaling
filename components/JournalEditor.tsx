@@ -75,7 +75,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
       setTimeout(() => {
         setSaveStatus('saved');
         onSave();
-      }, 300);
+      }, 1000); // Increased to 1s for smoother UI
     } catch (error) {
       console.error("Failed to save entry:", error);
       setSaveStatus('unsaved');
@@ -122,12 +122,13 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
     <div className="w-full pb-32 animate-fade-in">
 
       {/* Status Indicator */}
-      <div className="fixed top-4 right-4 z-40 flex items-center gap-3 pointer-events-none">
-        <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full border opacity-80 ${isGuest ? 'text-green-600 bg-green-50 border-green-100' : 'text-blue-600 bg-blue-50 border-blue-100'}`}>
+      {/* Status Indicator - Moved to bottom right to avoid overlap */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2 pointer-events-none">
+        <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full border opacity-80 shadow-sm backdrop-blur-sm ${isGuest ? 'text-green-600 bg-green-50/90 border-green-100 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400' : 'text-blue-600 bg-blue-50/90 border-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400'}`}>
           {isGuest ? <ShieldCheck className="w-3 h-3" /> : <Cloud className="w-3 h-3" />}
-          <span>{isGuest ? 'AES-GCM Encrypted' : 'Cloud Sync Active'}</span>
+          <span>{isGuest ? 'Encrypted' : 'Cloud Sync'}</span>
         </div>
-        <span className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all duration-300 ${saveStatus === 'saving' ? 'opacity-100 bg-white dark:bg-zinc-800 dark:border-zinc-600 dark:text-white' : saveStatus === 'unsaved' ? 'opacity-100 bg-red-50 text-red-600 border-red-100' : 'opacity-0'}`}>
+        <span className={`text-xs font-medium px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-sm transition-all duration-500 ${saveStatus === 'saving' ? 'opacity-100 translate-y-0 bg-white/90 dark:bg-zinc-800/90 dark:border-zinc-600 dark:text-white' : saveStatus === 'unsaved' ? 'opacity-100 translate-y-0 bg-red-50/90 text-red-600 border-red-100' : 'opacity-0 translate-y-2'}`}>
           {saveStatus === 'saving' ? 'Saving...' : 'Save Failed'}
         </span>
       </div>

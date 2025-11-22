@@ -1,26 +1,27 @@
 import { GoogleGenAI } from "@google/genai";
 import { JournalEntry } from "../types";
+import { firebaseConfig } from "../firebase";
 
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAI = () => new GoogleGenAI({ apiKey: firebaseConfig.apiKey });
 
 export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
   try {
     const ai = getAI();
     // Convert blob to base64
     const reader = new FileReader();
-    
+
     const base64Promise = new Promise<string>((resolve) => {
       reader.onloadend = () => {
         const base64String = (reader.result as string).split(',')[1];
         resolve(base64String);
       };
     });
-    
+
     reader.readAsDataURL(audioBlob);
     const base64Audio = await base64Promise;
 
     const model = 'gemini-2.5-flash';
-    
+
     const prompt = `
       Transcribe the following audio recording for a personal journal.
       
@@ -54,11 +55,11 @@ export const generateInsight = async (entry: JournalEntry): Promise<string> => {
   try {
     const ai = getAI();
     const model = 'gemini-2.5-flash';
-    
+
     // Strip HTML tags for analysis
     const narrativeText = entry.narrative.replace(/<[^>]*>/g, ' ');
     const reasoningText = entry.reasoning.replace(/<[^>]*>/g, ' ');
-    
+
     const prompt = `
       You are a high-performance personal growth coach (like a mix of Steve Jobs and a therapist).
       Analyze this journal entry:
@@ -92,8 +93,8 @@ export const generateWeeklyReview = async (entries: JournalEntry[]): Promise<str
   try {
     const ai = getAI();
     const model = 'gemini-2.5-flash';
-    
-    const entriesText = entries.map(e => 
+
+    const entriesText = entries.map(e =>
       `Date: ${e.date}, Rating: ${e.rating}, Summary: ${e.narrative.replace(/<[^>]*>/g, ' ').substring(0, 100)}...`
     ).join('\n');
 

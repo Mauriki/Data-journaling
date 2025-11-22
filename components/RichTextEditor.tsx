@@ -15,10 +15,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
   // Sync initial value
   useEffect(() => {
     if (contentRef.current && contentRef.current.innerHTML !== value) {
-        // Only update if significantly different to avoid cursor jumps
-        // Simple check: if empty, just set it.
-        if (value === '' && contentRef.current.innerHTML === '<br>') return;
-        contentRef.current.innerHTML = value;
+      // Only update if significantly different to avoid cursor jumps
+      // Simple check: if empty, just set it.
+      if (value === '' && contentRef.current.innerHTML === '<br>') return;
+      contentRef.current.innerHTML = value;
     }
   }, [value]);
 
@@ -31,8 +31,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
   const executeCommand = (command: string, value: string | undefined = undefined) => {
     document.execCommand(command, false, value);
     if (contentRef.current) {
-        contentRef.current.focus();
-        onChange(contentRef.current.innerHTML);
+      contentRef.current.focus();
+      onChange(contentRef.current.innerHTML);
     }
   };
 
@@ -70,7 +70,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
 
       <div
         ref={contentRef}
-        className="editor-content w-full bg-transparent text-lg text-apple-text leading-relaxed outline-none font-serif empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300"
+        className="editor-content w-full bg-transparent text-lg text-apple-text dark:text-gray-100 leading-relaxed outline-none font-serif empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-zinc-600"
         contentEditable
         onInput={handleInput}
         onFocus={() => setShowToolbar(true)}
