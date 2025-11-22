@@ -7,8 +7,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // Polyfill process.env for the code that uses it
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
+      // Polyfill process for OpenAI SDK and other Node-reliant packages
+      'process.env': env,
+      'process.version': JSON.stringify(process.version),
     },
     server: {
       host: true

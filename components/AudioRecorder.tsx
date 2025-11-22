@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Mic, Sparkles } from 'lucide-react';
-import { transcribeAudio } from '../services/geminiService';
+import { transcribeAudio } from '../services/openaiService';
 
 interface AudioRecorderProps {
   onTranscriptionComplete: (text: string) => void;
@@ -27,7 +27,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onTranscriptionComplete }
       mediaRecorderRef.current.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/mp3' });
         handleTranscription(blob);
-        
+
         // Stop all tracks to release mic
         stream.getTracks().forEach(track => track.stop());
       };
@@ -37,9 +37,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onTranscriptionComplete }
     } catch (err: any) {
       console.error("Error accessing microphone:", err);
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-         alert("Microphone access was denied. Please check your browser permissions for this site.");
+        alert("Microphone access was denied. Please check your browser permissions for this site.");
       } else {
-         alert("Could not access microphone. Please ensure your device has a microphone connected.");
+        alert("Could not access microphone. Please ensure your device has a microphone connected.");
       }
     }
   };
@@ -55,7 +55,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onTranscriptionComplete }
   const handleTranscription = async (blob: Blob) => {
     try {
       const text = await transcribeAudio(blob);
-      
+
       // Convert markdown to HTML for the rich text editor
       let formattedText = text
         .replace(/^### (.*$)/gim, '<h2>$1</h2>')
@@ -68,7 +68,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onTranscriptionComplete }
 
       // Clean up adjacent lists
       formattedText = formattedText.replace(/<\/ul><br><ul>/g, '');
-      
+
       onTranscriptionComplete(formattedText);
     } catch (error) {
       console.error(error);
@@ -91,8 +91,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onTranscriptionComplete }
           className="group flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-full transition-all"
         >
           <div className="relative w-2 h-2">
-             <div className="absolute inset-0 bg-red-500 rounded-full animate-ping"></div>
-             <div className="absolute inset-0 bg-red-500 rounded-full"></div>
+            <div className="absolute inset-0 bg-red-500 rounded-full animate-ping"></div>
+            <div className="absolute inset-0 bg-red-500 rounded-full"></div>
           </div>
           <span className="text-xs font-bold uppercase">Stop & Transcribe</span>
         </button>

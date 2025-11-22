@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { JournalEntry, RatingValue } from '../types';
 import { saveEntry, getEntryByDate } from '../services/storageService';
-import { generateInsight } from '../services/geminiService';
+import { generateInsight } from '../services/openaiService';
 import { useAuth } from '../contexts/AuthContext';
 import RatingInput from './RatingInput';
 import RichTextEditor from './RichTextEditor';

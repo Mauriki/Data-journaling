@@ -3,6 +3,7 @@ import JournalEditor from './components/JournalEditor';
 import HistoryDashboard from './components/HistoryDashboard';
 import LoginPage from './components/LoginPage';
 import SettingsModal from './components/SettingsModal';
+import ErrorBoundary from './components/ErrorBoundary';
 import { Book, BarChart2, Flame, UserCircle } from 'lucide-react';
 import { getStreak, runMigration } from './services/storageService';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -22,7 +23,7 @@ const AppContent: React.FC = () => {
     const init = async () => {
       if (user || isGuest) {
         // Run legacy migration just in case
-        await runMigration(); 
+        await runMigration();
         const s = await getStreak();
         setStreak(s);
         setIsReady(true);
@@ -47,7 +48,7 @@ const AppContent: React.FC = () => {
   };
 
   if (loading) {
-     return <div className="h-screen w-full flex items-center justify-center bg-apple-bg dark:bg-zinc-900 text-apple-gray">Loading...</div>;
+    return <div className="h-screen w-full flex items-center justify-center bg-apple-bg dark:bg-zinc-900 text-apple-gray">Loading...</div>;
   }
 
   if (!user && !isGuest) {
@@ -68,27 +69,27 @@ const AppContent: React.FC = () => {
 
       {/* Top Navigation Bar (Glassmorphism) */}
       <header className="flex-shrink-0 h-16 border-b border-gray-200/50 dark:border-white/10 bg-white/70 dark:bg-black/70 backdrop-blur-xl z-50 flex items-center justify-between px-4 md:px-8 transition-all sticky top-0">
-        
+
         {/* Left: Navigation Tabs */}
         <div className="flex items-center gap-1 bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-lg">
-          <button 
+          <button
             onClick={() => { setCurrentView('journal'); setEditDate(null); }}
             className={`
               flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ease-out
-              ${currentView === 'journal' 
-                ? 'bg-white dark:bg-zinc-600 text-apple-text dark:text-white shadow-sm' 
+              ${currentView === 'journal'
+                ? 'bg-white dark:bg-zinc-600 text-apple-text dark:text-white shadow-sm'
                 : 'text-apple-gray dark:text-zinc-400 hover:text-apple-text hover:bg-white/50'}
             `}
           >
             <Book className="w-4 h-4" />
             <span className="hidden sm:inline">Journal</span>
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView('history')}
             className={`
               flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ease-out
-              ${currentView === 'history' 
-                ? 'bg-white dark:bg-zinc-600 text-apple-text dark:text-white shadow-sm' 
+              ${currentView === 'history'
+                ? 'bg-white dark:bg-zinc-600 text-apple-text dark:text-white shadow-sm'
                 : 'text-apple-gray dark:text-zinc-400 hover:text-apple-text hover:bg-white/50'}
             `}
           >
@@ -103,15 +104,15 @@ const AppContent: React.FC = () => {
             <Flame className={`w-4 h-4 ${streak > 0 ? 'fill-orange-500' : ''}`} />
             <span className="text-xs font-semibold tracking-wide">{streak}</span>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => setIsSettingsOpen(true)}
             className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition-colors"
           >
             {user?.photoURL ? (
-               <img src={user.photoURL} className="w-8 h-8 rounded-full" alt="User" />
+              <img src={user.photoURL} className="w-8 h-8 rounded-full" alt="User" />
             ) : (
-               <UserCircle className="w-5 h-5" />
+              <UserCircle className="w-5 h-5" />
             )}
           </button>
         </div>
@@ -121,8 +122,8 @@ const AppContent: React.FC = () => {
       <main className="flex-1 overflow-y-auto no-scrollbar relative scroll-smooth">
         <div className="max-w-4xl mx-auto px-4 sm:px-8 py-10 min-h-full">
           {currentView === 'journal' ? (
-            <JournalEditor 
-              initialDate={editDate || new Date().toISOString().split('T')[0]} 
+            <JournalEditor
+              initialDate={editDate || new Date().toISOString().split('T')[0]}
               onSave={updateStreak}
             />
           ) : (
@@ -134,11 +135,13 @@ const AppContent: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 };
 
