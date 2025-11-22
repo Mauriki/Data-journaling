@@ -1,8 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { JournalEntry } from "../types";
-import { firebaseConfig } from "../firebase";
+import { geminiApiKey } from "../firebase";
 
-const getAI = () => new GoogleGenAI({ apiKey: firebaseConfig.apiKey });
+const getAI = () => new GoogleGenAI({ apiKey: geminiApiKey });
 
 export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
   try {

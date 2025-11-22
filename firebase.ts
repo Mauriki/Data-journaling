@@ -12,7 +12,8 @@ export const firebaseConfig = {
   measurementId: "G-QNHEJD6HV4"
 };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
+export const geminiApiKey = "AIzaSyBcGTlB3bK26F63bCVM-Gfz5rL0h_mgaN0";
