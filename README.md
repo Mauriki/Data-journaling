@@ -1,23 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Data Journaling App
 
-# Run and deploy your AI Studio app
+A modern, AI-powered journaling application built with React, Vite, and Firebase.
 
-This contains everything you need to run your app locally.
+## Features
+- **Smart Journaling**: AI-powered transcription and insights.
+- **Data Visualization**: Track your mood and habits over time.
+- **Secure**: Authentication and storage via Firebase.
+- **Responsive**: Beautiful, mobile-friendly design.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1OM0XOUKPS8RIB1UMU6_P9l1VY0-QALNL
+## Tech Stack
+- **Frontend**: React 18, TypeScript, Vite, TailwindCSS
+- **Backend**: Firebase (Auth, Firestore, Hosting)
+- **AI**: OpenAI (Whisper & GPT-4o-mini)
 
-## Run Locally
+## Getting Started
 
-**Prerequisites:**  Node.js
+1.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
+2.  **Run locally:**
+    ```bash
+    npm run dev
+    ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+3.  **Build for production:**
+    ```bash
+    npm run build
+    ```
 
-## Deployment Status
-Last updated: 2025-11-21
+## Deployment
+See [DEPLOY_INSTRUCTIONS.md](./DEPLOY_INSTRUCTIONS.md) for detailed deployment steps.

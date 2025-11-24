@@ -150,7 +150,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
       </header>
 
       {/* Editor Sections */}
-      <div className="space-y-12">
+      <div className="space-y-8">
 
         <section className="group">
           <div className="flex items-center justify-between mb-4">
@@ -161,13 +161,12 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
         </section>
 
         <section className="group">
-          <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest mb-6">02 — Analysis & Mood</label>
-          <div className="mb-8"><RatingInput value={rating} onChange={setRating} /></div>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-apple-gray dark:text-zinc-400">Reasoning</span>
+          <div className="flex items-center justify-between mb-6">
+            <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest">02 — Analysis & Mood</label>
             <AudioRecorder onTranscriptionComplete={appendReasoning} />
           </div>
-          <RichTextEditor value={reasoning} onChange={setReasoning} placeholder="Analyze the drivers..." minHeight="80px" />
+          <div className="mb-3"><RatingInput value={rating} onChange={setRating} /></div>
+          <RichTextEditor value={reasoning} onChange={setReasoning} placeholder="Why did you feel this way?..." minHeight="80px" />
         </section>
 
         <section className="group">
