@@ -23,14 +23,35 @@ const StreakFlame: React.FC<StreakFlameProps> = ({ size = 24, className = '' }) 
                 className="absolute inset-0 bg-orange-500/30 rounded-full blur-md"
             />
 
+            {/* Smoke/Steam Particles - Refined to be wispy and not "dot-like" */}
+            {[...Array(3)].map((_, i) => (
+                <motion.div
+                    key={i}
+                    initial={{ y: -5, x: 0, opacity: 0, scale: 0.5 }}
+                    animate={{
+                        y: -size * 1.8,
+                        x: (i % 2 === 0 ? 1 : -1) * (size * 0.4) + (Math.random() * 4 - 2), // Natural spread
+                        opacity: [0, 0.3, 0], // Lower max opacity for subtlety
+                        scale: [0.8, 1.5, 0.8], // Grow larger to diffuse
+                    }}
+                    transition={{
+                        duration: 2.5,
+                        repeat: Infinity,
+                        delay: i * 0.8,
+                        ease: "easeOut"
+                    }}
+                    className="absolute top-[-10%] w-2 h-2 bg-white/20 rounded-full blur-[2px]" // Increased blur, lower opacity
+                />
+            ))}
+
             {/* Steam Particles */}
 
 
             {/* Base Flame (Orange/Red) */}
             <motion.div
                 animate={{
-                    scale: [1, 1.05, 0.95, 1],
-                    rotate: [-2, 2, -1, 0],
+                    scale: [1, 1.1, 0.95, 1], // More dynamic scale
+                    rotate: [-3, 3, -2, 0], // More dynamic rotation
                 }}
                 transition={{
                     duration: 0.8,
