@@ -85,22 +85,22 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md animate-fade-in">
 
         {/* Logo Area */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white dark:bg-zinc-800 shadow-float mb-6">
-            <Feather className="w-10 h-10 text-apple-text dark:text-white" />
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-[2rem] bg-white dark:bg-zinc-800 shadow-float mb-8 animate-zoom-in">
+            <Feather className="w-12 h-12 text-apple-text dark:text-white" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight mb-3">Data Journaling</h1>
-          <p className="text-apple-gray dark:text-zinc-400 text-lg">
+          <h1 className="text-4xl font-bold tracking-tight mb-3 animate-slide-in-from-bottom" style={{ animationDelay: '0.1s' }}>Data Journaling</h1>
+          <p className="text-apple-gray dark:text-zinc-400 text-lg animate-slide-in-from-bottom" style={{ animationDelay: '0.2s' }}>
             Your life, beautifully documented.
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/70 dark:bg-zinc-800/50 backdrop-blur-xl rounded-3xl p-8 shadow-apple border border-white/20 dark:border-white/5 overflow-hidden">
+        <div className="bg-white/70 dark:bg-zinc-800/50 backdrop-blur-2xl rounded-[2.5rem] p-10 shadow-float border border-white/40 dark:border-white/5 overflow-hidden animate-slide-in-from-bottom" style={{ animationDelay: '0.3s' }}>
 
           {/* UNAUTHORIZED DOMAIN ERROR - THE FIX */}
           {unauthorizedDomain && (
-            <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 rounded-xl text-sm">
+            <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 rounded-2xl text-sm">
               <div className="flex items-start gap-3 text-orange-800 dark:text-orange-200 mb-3">
                 <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
                 <span className="font-bold">Action Required: Whitelist Domain</span>
@@ -135,7 +135,7 @@ const LoginPage: React.FC = () => {
               <button
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-apple-text dark:bg-white text-white dark:text-black font-semibold py-4 rounded-xl transition-transform active:scale-[0.98] hover:shadow-lg disabled:opacity-70"
+                className="w-full flex items-center justify-center gap-3 bg-apple-text dark:bg-white text-white dark:text-black font-semibold py-4 rounded-2xl transition-transform active:scale-[0.98] hover:shadow-lg disabled:opacity-70"
               >
                 {loading ? "Connecting..." : (
                   <>
@@ -147,40 +147,40 @@ const LoginPage: React.FC = () => {
 
               <button
                 onClick={() => setShowEmailAuth(true)}
-                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-apple-text dark:text-white font-medium py-4 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-apple-text dark:text-white font-medium py-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
               >
                 <Mail className="w-5 h-5" />
                 <span>Continue with Email</span>
               </button>
 
-              <div className="relative py-2">
+              <div className="relative py-3">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200 dark:border-zinc-700"></div></div>
-                <div className="relative flex justify-center"><span className="bg-transparent px-2 text-xs text-gray-400 uppercase tracking-wider">Or</span></div>
+                <div className="relative flex justify-center"><span className="bg-transparent px-2 text-xs text-gray-400 uppercase tracking-wider font-semibold">Or</span></div>
               </div>
 
               <button
                 onClick={loginGuest}
-                className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-zinc-700 text-apple-text dark:text-white font-medium py-4 rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-zinc-700/50 text-apple-text dark:text-white font-medium py-4 rounded-2xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors group"
               >
                 <span>Continue as Guest</span>
-                <ArrowRight className="w-4 h-4 opacity-50" />
+                <ArrowRight className="w-4 h-4 opacity-50 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           ) : (
-            <form onSubmit={handleEmailAuth} className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
+            <form onSubmit={handleEmailAuth} className="space-y-5 animate-slide-in-from-right">
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">Email Address</label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">Email Address</label>
                 <input
                   type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="you@example.com"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">Password</label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">Password</label>
                 <input
                   type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="••••••••"
                   minLength={6}
                 />
@@ -189,29 +189,27 @@ const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98]"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98]"
               >
                 {loading ? "Processing..." : (isSignUp ? "Create Account" : "Sign In")}
               </button>
 
               <div className="flex items-center justify-between text-sm pt-2">
-                <button type="button" onClick={() => setShowEmailAuth(false)} className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">Back</button>
-                <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-blue-600 hover:underline">
+                <button type="button" onClick={() => setShowEmailAuth(false)} className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 font-medium">Back</button>
+                <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-blue-600 hover:underline font-medium">
                   {isSignUp ? "Already have an account?" : "Create an account"}
                 </button>
               </div>
             </form>
           )}
 
-          <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-zinc-500">
+          <div className="mt-10 flex items-center justify-center gap-2 text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-wide font-medium">
             <Lock className="w-3 h-3" />
             <span>
-              Guest data encrypted locally. Cloud data encrypted by Google.
+              Guest data encrypted locally.
             </span>
           </div>
         </div>
-
-
 
       </div>
     </div>

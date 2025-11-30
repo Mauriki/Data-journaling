@@ -8,6 +8,8 @@ interface AuthContextType {
   isGuest: boolean;
   loading: boolean;
   darkMode: boolean;
+  isPro: boolean;
+  usage: { transcriptionSeconds: number; aiSummaryCount: number };
   loginGoogle: () => Promise<void>;
   loginEmail: (email: string, pass: string) => Promise<void>;
   registerEmail: (email: string, pass: string) => Promise<void>;
@@ -23,6 +25,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isGuest, setIsGuest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  const [isPro] = useState(false);
+  const [usage] = useState({ transcriptionSeconds: 0, aiSummaryCount: 0 });
 
   // Handle Auth State Changes
   useEffect(() => {
@@ -30,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (currentUser) {
         setUser(currentUser);
         setIsGuest(false); // Ensure guest mode is off if user is found
-        
+
         // Run migration: If user had local data (from guest mode), move it to cloud
         await migrateLocalToCloud(currentUser.uid);
       } else {
@@ -111,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, isGuest, loading, darkMode, loginGoogle, loginEmail, registerEmail, loginGuest, logout, toggleDarkMode }}>
+    <AuthContext.Provider value={{ user, isGuest, loading, darkMode, isPro, usage, loginGoogle, loginEmail, registerEmail, loginGuest, logout, toggleDarkMode }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,22 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import JournalEditor from './components/JournalEditor';
-import HistoryDashboard from './components/HistoryDashboard';
 import LoginPage from './components/LoginPage';
-import SettingsModal from './components/SettingsModal';
 import ErrorBoundary from './components/ErrorBoundary';
-import { Book, BarChart2, Flame, UserCircle } from 'lucide-react';
 import { getStreak, runMigration } from './services/storageService';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Sidebar } from './components/Sidebar';
+
+// Lazy Load Heavy Components
+const HistoryDashboard = React.lazy(() => import('./components/HistoryDashboard'));
+const SettingsModal = React.lazy(() => import('./components/SettingsModal'));
+const ContactModal = React.lazy(() => import('./components/ContactModal'));
 
 type View = 'journal' | 'history';
 
+
 const AppContent: React.FC = () => {
-  const { user, isGuest, loading } = useAuth();
+  const { user, isGuest, loading, isPro, usage } = useAuth();
   const [currentView, setCurrentView] = useState<View>('journal');
   const [editDate, setEditDate] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
   const [isReady, setIsReady] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
+
+  // Mobile detection
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile); // Default open on desktop
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setIsSidebarOpen(false);
+      else setIsSidebarOpen(true);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Run initialization logic when user/guest status is confirmed
   useEffect(() => {
@@ -63,74 +83,66 @@ const AppContent: React.FC = () => {
     );
   }
 
+
+
   return (
-    <div className="h-screen w-full flex flex-col bg-apple-bg dark:bg-zinc-900 transition-colors duration-500 relative">
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+    <div className="h-screen w-full flex bg-apple-bg dark:bg-zinc-900 transition-colors duration-500 overflow-hidden">
+      <Suspense fallback={null}>
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          onUpgrade={() => { console.log("Upgrade clicked") }}
+          onContact={() => setIsContactOpen(true)}
+        />
+        <ContactModal
+          isOpen={isContactOpen}
+          onClose={() => setIsContactOpen(false)}
+        />
+      </Suspense>
 
-      {/* Top Navigation Bar (Glassmorphism) */}
-      <header className="flex-shrink-0 h-16 border-b border-gray-200/50 dark:border-white/10 bg-white/70 dark:bg-black/70 backdrop-blur-xl z-50 flex items-center justify-between px-4 md:px-8 transition-all sticky top-0">
+      {/* Sidebar Navigation */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        currentView={currentView}
+        onViewChange={(view) => { setCurrentView(view); setEditDate(null); }}
+        user={user}
+        streak={streak}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        isMobile={isMobile}
+        isPro={isPro}
+        usage={usage}
+      />
 
-        {/* Left: Navigation Tabs */}
-        <div className="flex items-center gap-1 bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-lg">
-          <button
-            onClick={() => { setCurrentView('journal'); setEditDate(null); }}
-            className={`
-              flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ease-out
-              ${currentView === 'journal'
-                ? 'bg-white dark:bg-zinc-600 text-apple-text dark:text-white shadow-sm'
-                : 'text-apple-gray dark:text-zinc-400 hover:text-apple-text hover:bg-white/50'}
-            `}
-          >
-            <Book className="w-4 h-4" />
-            <span className="hidden sm:inline">Journal</span>
-          </button>
-          <button
-            onClick={() => setCurrentView('history')}
-            className={`
-              flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ease-out
-              ${currentView === 'history'
-                ? 'bg-white dark:bg-zinc-600 text-apple-text dark:text-white shadow-sm'
-                : 'text-apple-gray dark:text-zinc-400 hover:text-apple-text hover:bg-white/50'}
-            `}
-          >
-            <BarChart2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Index</span>
-          </button>
-        </div>
-
-        {/* Right: Controls */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800/50 text-orange-600 dark:text-orange-400 transition-all cursor-default">
-            <Flame className={`w-4 h-4 ${streak > 0 ? 'fill-orange-500' : ''}`} />
-            <span className="text-xs font-semibold tracking-wide">{streak}</span>
-          </div>
-
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition-colors"
-          >
-            {user?.photoURL ? (
-              <img src={user.photoURL} className="w-8 h-8 rounded-full" alt="User" />
+      {/* Main Content Area */}
+      <div
+        className={`
+          flex-1 h-full relative transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)
+          ${isMobile ? 'ml-0 w-full' : (isSidebarOpen ? 'ml-[240px]' : 'ml-[72px]')}
+        `}
+      >
+        <main className="h-full overflow-y-auto no-scrollbar scroll-smooth pb-safe-bottom">
+          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-6 min-h-full">
+            {currentView === 'journal' ? (
+              <JournalEditor
+                initialDate={editDate || new Date().toISOString().split('T')[0]}
+                onSave={updateStreak}
+                onUpgrade={() => { }}
+                onToggleSidebar={isMobile ? () => setIsSidebarOpen(true) : undefined}
+                streak={streak}
+              />
             ) : (
-              <UserCircle className="w-5 h-5" />
+              <Suspense fallback={<div className="p-10 text-center text-gray-400">Loading Index...</div>}>
+                <HistoryDashboard
+                  onEditEntry={handleEditEntry}
+                />
+              </Suspense>
             )}
-          </button>
-        </div>
-      </header>
+          </div>
+        </main>
+      </div>
 
-      {/* Main Scrollable Area */}
-      <main className="flex-1 overflow-y-auto no-scrollbar relative scroll-smooth">
-        <div className="max-w-4xl mx-auto px-4 sm:px-8 py-10 min-h-full">
-          {currentView === 'journal' ? (
-            <JournalEditor
-              initialDate={editDate || new Date().toISOString().split('T')[0]}
-              onSave={updateStreak}
-            />
-          ) : (
-            <HistoryDashboard onEditEntry={handleEditEntry} />
-          )}
-        </div>
-      </main>
+
     </div>
   );
 };
@@ -143,6 +155,6 @@ function App() {
       </AuthProvider>
     </ErrorBoundary>
   );
-};
+}
 
 export default App;

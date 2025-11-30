@@ -1,19 +1,26 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { JournalEntry, RatingValue } from '../types';
 import { saveEntry, getEntryByDate } from '../services/storageService';
-import { generateInsight } from '../services/openaiService';
+
 import { useAuth } from '../contexts/AuthContext';
 import RatingInput from './RatingInput';
 import RichTextEditor from './RichTextEditor';
 import AudioRecorder from './AudioRecorder';
-import { Calendar, Sparkles, Tag, Plus, ShieldCheck, Cloud, ArrowRight } from 'lucide-react';
+import { Tag, Plus, Menu, ChevronDown } from 'lucide-react';
+import StreakFlame from './StreakFlame';
+import Calendar from './Calendar';
+import { JOURNAL_PROMPTS, ANALYSIS_PROMPTS, STRATEGY_PROMPTS } from '../data/prompts';
 
 interface JournalEditorProps {
   initialDate: string;
   onSave: () => void;
+  onUpgrade?: () => void;
+  onToggleSidebar?: () => void;
+  streak?: number;
 }
 
-const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) => {
+const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onToggleSidebar, streak = 0 }) => {
   const { isGuest } = useAuth();
   const [date, setDate] = useState(initialDate);
 
@@ -27,8 +34,9 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
   const [newTag, setNewTag] = useState('');
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
-  const [isGenerating, setIsGenerating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [entryDates, setEntryDates] = useState<string[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -52,7 +60,14 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
       setLoading(false);
       setSaveStatus('saved');
     };
+
+    const loadEntryDates = async () => {
+      const entries = await import('../services/storageService').then(m => m.getEntries());
+      setEntryDates(entries.map(e => e.date));
+    };
+
     init();
+    loadEntryDates();
   }, [initialDate]);
 
   const saveData = useCallback(async () => {
@@ -93,22 +108,9 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
     return () => clearTimeout(timer);
   }, [narrative, reasoning, plan, rating, tags, aiInsight, saveData, loading]);
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDate(e.target.value);
-  };
 
-  const handleGenerateInsight = async () => {
-    if (rating === null && !narrative && !reasoning && !plan) return;
-    setIsGenerating(true);
-    const entry: JournalEntry = {
-      id: date, date, timestamp: Date.now(), narrative, rating: rating || 0, reasoning, planForTomorrow: plan, tags
-    };
-    const insight = await generateInsight(entry);
-    setAiInsight(insight);
-    entry.aiSummary = insight;
-    await saveEntry(entry);
-    setIsGenerating(false);
-  };
+
+
 
   const appendNarrative = useCallback((text: string) => setNarrative(prev => prev + text), []);
   const appendReasoning = useCallback((text: string) => setReasoning(prev => prev + text), []);
@@ -121,65 +123,107 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
   return (
     <div className="w-full pb-32 animate-fade-in">
 
-      {/* Status Indicator */}
-      {/* Status Indicator - Moved to bottom right to avoid overlap */}
+      {/* Status Indicator - Removed Cloud Sync, kept Save Status only if needed, but user asked to remove "Cloud Sync" specifically. 
+          I will keep the save status but remove the cloud icon part as requested. 
+          Actually, the user said "remove cloud sync", implying the feature and likely the UI. 
+          I'll keep the save status text for feedback but remove the "Encrypted/Cloud Sync" badge.
+      */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2 pointer-events-none">
-        <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full border opacity-80 shadow-sm backdrop-blur-sm ${isGuest ? 'text-green-600 bg-green-50/90 border-green-100 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400' : 'text-blue-600 bg-blue-50/90 border-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400'}`}>
-          {isGuest ? <ShieldCheck className="w-3 h-3" /> : <Cloud className="w-3 h-3" />}
-          <span>{isGuest ? 'Encrypted' : 'Cloud Sync'}</span>
-        </div>
         <span className={`text-xs font-medium px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-sm transition-all duration-500 ${saveStatus === 'saving' ? 'opacity-100 translate-y-0 bg-white/90 dark:bg-zinc-800/90 dark:border-zinc-600 dark:text-white' : saveStatus === 'unsaved' ? 'opacity-100 translate-y-0 bg-red-50/90 text-red-600 border-red-100' : 'opacity-0 translate-y-2'}`}>
           {saveStatus === 'saving' ? 'Saving...' : 'Save Failed'}
         </span>
       </div>
 
       {/* Header */}
-      <header className="mb-10 pb-6 border-b border-gray-200/60 dark:border-white/10">
-        <div className="flex items-center gap-2 text-apple-gray dark:text-zinc-400 mb-1">
-          <Calendar className="w-4 h-4" />
-          <input
-            type="date"
-            value={date}
-            onChange={handleDateChange}
-            className="bg-transparent border-none outline-none text-sm font-medium text-apple-gray dark:text-zinc-400 hover:text-apple-blue cursor-pointer uppercase tracking-wide"
-          />
+      <header className="mb-12 md:mb-16 pb-6 border-b border-gray-200/60 dark:border-white/10 animate-slide-in-from-bottom" style={{ animationDelay: '0.1s' }}>
+
+        {/* Mobile Top Row: Menu & Streak */}
+        <div className="flex md:hidden items-center justify-between mb-2">
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 -ml-2 text-apple-gray dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors active:scale-95"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+
+          <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-800/50 shadow-sm">
+            <StreakFlame size={18} />
+            <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{streak}</span>
+          </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-apple-text dark:text-white tracking-tight">
-          {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-        </h1>
+
+        <div className="relative">
+          <button
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="group flex items-center gap-3 text-4xl md:text-6xl font-bold text-apple-text dark:text-white tracking-tight leading-tight hover:opacity-80 transition-opacity"
+          >
+            <span>{new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+            <ChevronDown className={`w-6 h-6 md:w-8 md:h-8 text-gray-400 transition-transform duration-300 ${showCalendar ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showCalendar && (
+            <div className="absolute top-full left-0 mt-4 z-50">
+              <div className="fixed inset-0 z-40" onClick={() => setShowCalendar(false)} />
+              <div className="relative z-50">
+                <Calendar
+                  selectedDate={date}
+                  onSelectDate={(d) => { setDate(d); setShowCalendar(false); }}
+                  entryDates={entryDates}
+                  onClose={() => setShowCalendar(false)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Editor Sections */}
-      <div className="space-y-8">
+      <div className="space-y-16">
 
-        <section className="group">
-          <div className="flex items-center justify-between mb-4">
+        <section className="group animate-slide-in-from-bottom" style={{ animationDelay: '0.2s' }}>
+          <div className="flex items-center justify-between mb-6">
             <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest">01 — Narrative</label>
             <AudioRecorder onTranscriptionComplete={appendNarrative} />
           </div>
-          <RichTextEditor value={narrative} onChange={setNarrative} placeholder="What happened today?..." />
+          <RichTextEditor
+            value={narrative}
+            onChange={setNarrative}
+            animatedPlaceholder={JOURNAL_PROMPTS}
+          />
         </section>
 
-        <section className="group">
-          <div className="flex items-center justify-between mb-6">
+        <section className="group animate-slide-in-from-bottom" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center justify-between mb-8">
             <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest">02 — Analysis & Mood</label>
             <AudioRecorder onTranscriptionComplete={appendReasoning} />
           </div>
-          <div className="mb-3"><RatingInput value={rating} onChange={setRating} /></div>
-          <RichTextEditor value={reasoning} onChange={setReasoning} placeholder="Why did you feel this way?..." minHeight="80px" />
+          <div className="mb-8"><RatingInput value={rating} onChange={setRating} /></div>
+          <RichTextEditor
+            value={reasoning}
+            onChange={setReasoning}
+            minHeight="80px"
+            animatedPlaceholder={ANALYSIS_PROMPTS}
+          />
         </section>
 
-        <section className="group">
-          <div className="flex items-center justify-between mb-3">
+        <section className="group animate-slide-in-from-bottom" style={{ animationDelay: '0.4s' }}>
+          <div className="flex items-center justify-between mb-6">
             <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest">03 — Strategy</label>
             <AudioRecorder onTranscriptionComplete={appendPlan} />
           </div>
-          <RichTextEditor value={plan} onChange={setPlan} placeholder="Actionable steps..." minHeight="80px" />
+          <RichTextEditor
+            value={plan}
+            onChange={setPlan}
+            minHeight="80px"
+            animatedPlaceholder={STRATEGY_PROMPTS}
+          />
         </section>
 
-        <section className="pt-6 border-t border-gray-200/60 dark:border-white/10">
+        {/* 04 - Daily Summary Section REMOVED */}
+
+        <section className="pt-8 border-t border-gray-200/60 dark:border-white/10 animate-slide-in-from-bottom" style={{ animationDelay: '0.6s' }}>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-apple-gray dark:text-zinc-400 bg-gray-50 dark:bg-zinc-800 px-2 rounded-lg">
+            <div className="flex items-center gap-2 text-apple-gray dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800/80 px-4 py-2 rounded-full transition-colors hover:bg-gray-200 dark:hover:bg-zinc-700">
               <Tag className="w-4 h-4" />
               <input
                 type="text"
@@ -187,32 +231,14 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave }) =>
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (() => { if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag(''); } })()}
                 placeholder="Add tag"
-                className="bg-transparent border-none outline-none text-sm py-1.5 min-w-[80px] placeholder:text-gray-400 focus:ring-0"
+                className="bg-transparent border-none outline-none text-sm min-w-[80px] placeholder:text-gray-400 focus:ring-0"
               />
-              <button onClick={() => { if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag(''); } }} className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 text-apple-gray"><Plus className="w-3 h-3" /></button>
+              <button onClick={() => { if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag(''); } }} className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-zinc-600 text-apple-gray transition-colors"><Plus className="w-3 h-3" /></button>
             </div>
-            {tags.map(tag => <span key={tag} onClick={() => setTags(tags.filter(t => t !== tag))} className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full text-xs font-medium cursor-pointer">#{tag}</span>)}
+            {tags.map(tag => <span key={tag} onClick={() => setTags(tags.filter(t => t !== tag))} className="px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-full text-sm font-medium cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">#{tag}</span>)}
           </div>
         </section>
 
-        <section className="pt-8 flex justify-end">
-          {!aiInsight && (
-            <button
-              onClick={handleGenerateInsight}
-              disabled={isGenerating || (!narrative && !rating && !reasoning && !plan)}
-              className="flex items-center gap-2 pl-4 pr-5 py-3 bg-apple-text dark:bg-white text-white dark:text-black rounded-full shadow-float hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50"
-            >
-              {isGenerating ? <><ArrowRight className="w-4 h-4 animate-spin" /><span className="font-medium">Thinking...</span></> : <><Sparkles className="w-4 h-4" /><span className="font-medium">Generate Daily Summary</span></>}
-            </button>
-          )}
-        </section>
-
-        {aiInsight && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
-            <div className="flex items-center gap-2 mb-2 text-blue-600 dark:text-blue-400"><Sparkles className="w-4 h-4" /><span className="text-xs font-bold uppercase">Daily Intelligence</span></div>
-            <div className="prose prose-sm max-w-none text-apple-text dark:text-gray-200 font-serif">{aiInsight}</div>
-          </div>
-        )}
       </div>
     </div>
   );
