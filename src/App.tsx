@@ -141,7 +141,7 @@ const AppContent: React.FC = () => {
         `}
       >
         <main className="h-full overflow-y-auto no-scrollbar scroll-smooth pb-safe-bottom">
-          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-6 min-h-full">
+          <div className="max-w-5xl mx-auto px-3 md:px-8 py-3 md:py-6 min-h-full">
             {currentView === 'journal' ? (
               <JournalEditor
                 initialDate={editDate || new Date().toISOString().split('T')[0]}

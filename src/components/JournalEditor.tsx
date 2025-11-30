@@ -207,7 +207,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
       />
 
       {/* Editor Sections Container */}
-      <div className="mx-auto max-w-[var(--card-max-width)] px-[var(--space-l)] space-y-[var(--space-l)] md:space-y-[var(--space-xl)]">
+      <div className="mx-auto max-w-[var(--card-max-width)] px-0 md:px-[var(--space-l)] space-y-4 md:space-y-[var(--space-xl)]">
 
         <section className="group animate-slide-in-from-bottom @container" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-between mb-[var(--space-s)]">
@@ -221,7 +221,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             </div>
           </div>
 
-          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-3 md:p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
             <RichTextEditor
               value={narrative}
               onChange={handleNarrativeChange}
@@ -237,7 +237,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             </div>
           </div>
 
-          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-3 md:p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
             {/* Rating - First in Analysis */}
             <div className="mb-[var(--space-m)]">
               <RatingInput value={rating} onChange={handleRatingChange} />
@@ -274,7 +274,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             </div>
           </div>
 
-          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-3 md:p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
             <RichTextEditor
               value={plan}
               onChange={handlePlanChange}

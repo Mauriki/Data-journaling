@@ -161,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed top-0 left-0 bottom-0 w-[85%] max-w-[300px] z-50 shadow-2xl"
+                            className="fixed top-0 left-0 bottom-0 w-auto min-w-[220px] max-w-[50vw] z-50 shadow-2xl"
                         >
                             <SidebarContent />
                         </motion.aside>
