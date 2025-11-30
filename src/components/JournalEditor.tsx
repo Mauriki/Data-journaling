@@ -7,10 +7,8 @@ import { useAuth } from '../contexts/AuthContext';
 import RatingInput from './RatingInput';
 import RichTextEditor from './RichTextEditor';
 import AudioRecorder from './AudioRecorder';
-import { Tag, Plus, Menu, ChevronDown } from 'lucide-react';
-import StreakFlame from './StreakFlame';
-import FireArrow from './FireArrow';
-import Calendar from './Calendar';
+import { Tag, Plus } from 'lucide-react';
+import TopBar from './TopBar';
 import { JOURNAL_PROMPTS, ANALYSIS_PROMPTS, STRATEGY_PROMPTS } from '../data/prompts';
 
 interface JournalEditorProps {
@@ -42,7 +40,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
   // Fire Arrow & Streak State
   const [streakStatus, setStreakStatus] = useState<'unlit' | 'igniting' | 'burning'>('burning');
   const [fireArrowConfig, setFireArrowConfig] = useState<{ start: { x: number, y: number }, end: { x: number, y: number } } | null>(null);
-  const streakRef = React.useRef<HTMLDivElement>(null);
+  const streakRef = React.useRef<HTMLDivElement | null>(null);
   const [displayStreak, setDisplayStreak] = useState(streak);
 
   useEffect(() => {
@@ -166,8 +164,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
   }
 
   return (
-    <div className="w-full pb-32 animate-fade-in">
-
+    <div className="w-full pb-32 animate-fade-in @container">
       {/* Status Indicator - Removed Cloud Sync, kept Save Status only if needed, but user asked to remove "Cloud Sync" specifically. 
           I will keep the save status but remove the cloud icon part as requested. 
           Actually, the user said "remove cloud sync", implying the feature and likely the UI. 
@@ -179,66 +176,23 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
         </span>
       </div>
 
-      {/* Header */}
-      <header className="mb-12 md:mb-16 pb-6 border-b border-gray-200/60 dark:border-white/10 animate-slide-in-from-bottom" style={{ animationDelay: '0.1s' }}>
-
-        {/* Mobile Top Row: Menu & Streak */}
-        <div className="flex md:hidden items-center justify-between mb-4">
-          <button
-            onClick={onToggleSidebar}
-            className="p-2 -ml-2 text-apple-gray dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors active:scale-95"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-
-          <div ref={streakRef} className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-800/50 shadow-sm">
-            <StreakFlame size={18} status={streakStatus} />
-            <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{displayStreak}</span>
-          </div>
-        </div>
-
-        <div className="relative flex items-center justify-between">
-          <button
-            onClick={() => setShowCalendar(!showCalendar)}
-            className="group flex items-center gap-3 text-3xl md:text-4xl font-bold text-apple-text dark:text-white tracking-tight leading-tight hover:opacity-80 transition-opacity"
-          >
-            <span>{new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
-            <ChevronDown className={`w-6 h-6 md:w-8 md:h-8 text-gray-400 transition-transform duration-300 ${showCalendar ? 'rotate-180' : ''}`} />
-          </button>
-
-          {showCalendar && (
-            <div className="absolute top-full left-0 mt-4 z-50">
-              <div className="fixed inset-0 z-40" onClick={() => setShowCalendar(false)} />
-              <div className="relative z-50">
-                <Calendar
-                  selectedDate={date}
-                  onSelectDate={(d) => { setDate(d); setShowCalendar(false); }}
-                  entryDates={entryDates}
-                  onClose={() => setShowCalendar(false)}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Desktop Streak Indicator */}
-          <div ref={streakRef} className="hidden md:flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 px-4 py-2 rounded-full border border-orange-100 dark:border-orange-800/50 shadow-sm">
-            <StreakFlame size={20} status={streakStatus} />
-            <span className="text-base font-bold text-orange-600 dark:text-orange-400">{displayStreak}</span>
-          </div>
-        </div>
-      </header>
-
-      {/* Fire Arrow Overlay */}
-      {fireArrowConfig && (
-        <FireArrow
-          startPos={fireArrowConfig.start}
-          endPos={fireArrowConfig.end}
-          onComplete={handleFireArrowComplete}
-        />
-      )}
+      <TopBar
+        date={date}
+        setDate={setDate}
+        showCalendar={showCalendar}
+        setShowCalendar={setShowCalendar}
+        entryDates={entryDates}
+        onToggleSidebar={onToggleSidebar}
+        streak={streak}
+        streakStatus={streakStatus}
+        displayStreak={displayStreak}
+        fireArrowConfig={fireArrowConfig}
+        onFireArrowComplete={handleFireArrowComplete}
+        onStreakRef={(ref) => { streakRef.current = ref; }}
+      />
 
       {/* Editor Sections */}
-      <div className="space-y-16">
+      <div className="space-y-16 md:space-y-24">
 
         <section className="group animate-slide-in-from-bottom" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-between mb-6">
