@@ -7,51 +7,35 @@ interface RatingInputProps {
 }
 
 const RatingInput: React.FC<RatingInputProps> = ({ value, onChange }) => {
-  const options: { val: RatingValue; label: string }[] = [
-    { val: -2, label: "Terrible" },
-    { val: -1, label: "Bad" },
-    { val: 0, label: "Neutral" },
-    { val: 1, label: "Good" },
-    { val: 2, label: "Excellent" },
+  const ratings: { value: RatingValue; label: string }[] = [
+    { value: -2, label: "-2" },
+    { value: -1, label: "-1" },
+    { value: 0, label: "0" },
+    { value: 1, label: "+1" },
+    { value: 2, label: "+2" },
   ];
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-      <div className="flex items-center gap-1 sm:gap-2 bg-white rounded-xl border border-ui-border p-1.5 shadow-sm">
-        {options.map((opt) => {
-          const isSelected = value === opt.val;
-
-          // Color logic
-          let bgClass = 'hover:bg-gray-50 text-gray-500';
-          if (isSelected) {
-            if (opt.val > 0) bgClass = 'bg-green-100 text-green-700 shadow-sm';
-            else if (opt.val < 0) bgClass = 'bg-red-100 text-red-700 shadow-sm';
-            else bgClass = 'bg-gray-200 text-gray-800 shadow-sm';
-          }
-
-          return (
-            <button
-              key={opt.val}
-              type="button"
-              onClick={() => onChange(opt.val)}
-              className={`
-                relative flex flex-col items-center justify-center
-                w-10 h-10 sm:w-12 sm:h-12 rounded-lg transition-all duration-200
-                font-medium text-sm
-                ${bgClass}
-              `}
-            >
-              {opt.val > 0 ? `+${opt.val}` : opt.val}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="h-6 text-sm font-medium text-ink-secondary animate-in fade-in">
-        {value !== null ? options.find(o => o.val === value)?.label : <span className="opacity-50">Select a rating</span>}
+    <div className="flex items-center gap-2">
+      <div className="flex gap-1 bg-gray-100/50 dark:bg-white/5 p-1 rounded-lg">
+        {ratings.map((r) => (
+          <button
+            key={r.value}
+            onClick={() => onChange(r.value)}
+            className={`
+              w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-all duration-200
+              ${value === r.value
+                ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm scale-105'
+                : 'text-gray-400 dark:text-gray-500 hover:bg-white/50 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-gray-300'}
+            `}
+            title={`Rate as ${r.value}`}
+          >
+            {r.label}
+          </button>
+        ))}
       </div>
     </div>
   );
 };
 
-export default RatingInput;
+export default React.memo(RatingInput);

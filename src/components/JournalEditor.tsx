@@ -16,10 +16,11 @@ interface JournalEditorProps {
   onSave: () => void;
   onUpgrade?: () => void;
   onToggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
   streak?: number;
 }
 
-const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onToggleSidebar, streak = 0 }) => {
+const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onToggleSidebar, isSidebarOpen, streak = 0 }) => {
   const { isGuest } = useAuth();
   const [date, setDate] = useState(initialDate);
 
@@ -39,8 +40,6 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
 
   // Fire Arrow & Streak State
   const [streakStatus, setStreakStatus] = useState<'unlit' | 'igniting' | 'burning'>('burning');
-  const [fireArrowConfig, setFireArrowConfig] = useState<{ start: { x: number, y: number }, end: { x: number, y: number } } | null>(null);
-  const streakRef = React.useRef<HTMLDivElement | null>(null);
   const [displayStreak, setDisplayStreak] = useState(streak);
 
   useEffect(() => {
@@ -128,36 +127,54 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
     return () => clearTimeout(timer);
   }, [narrative, reasoning, plan, rating, tags, aiInsight, saveData, loading]);
 
-
-
-
-
-  const appendNarrative = useCallback((text: string) => setNarrative(prev => prev + text), []);
-  const appendReasoning = useCallback((text: string) => setReasoning(prev => prev + text), []);
-  const appendPlan = useCallback((text: string) => setPlan(prev => prev + text), []);
-
-  const handleIgnite = useCallback((startCoords: { x: number, y: number }) => {
-    if (streakStatus !== 'unlit') return;
-
-    // Get destination coordinates (center of streak icon)
-    if (streakRef.current) {
-      const rect = streakRef.current.getBoundingClientRect();
-      const endCoords = {
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2
-      };
-
-      setFireArrowConfig({ start: startCoords, end: endCoords });
-      setStreakStatus('igniting');
+  const handleTranscription = useCallback((text: string, field: 'journal' | 'analysis' | 'strategy') => {
+    if (field === 'journal') {
+      setNarrative(prev => prev + (prev ? ' ' : '') + text);
+    } else if (field === 'analysis') {
+      setReasoning(prev => prev + (prev ? ' ' : '') + text);
+    } else if (field === 'strategy') {
+      setPlan(prev => prev + (prev ? ' ' : '') + text);
     }
-  }, [streakStatus]);
-
-  const handleFireArrowComplete = useCallback(() => {
-    setStreakStatus('burning');
-    setFireArrowConfig(null);
-    // Bounce animation for streak number could be added here if we had a ref to the number or a separate component
-    setDisplayStreak(prev => prev + 1); // Optimistic update if needed, or just visual
+    setSaveStatus('saving');
   }, []);
+
+  // Memoized event handlers for performance
+  const handleNarrativeChange = useCallback((content: string) => {
+    setNarrative(content);
+    setSaveStatus('saving');
+  }, []);
+
+  const handleReasoningChange = useCallback((content: string) => {
+    setReasoning(content);
+    setSaveStatus('saving');
+  }, []);
+
+  const handlePlanChange = useCallback((content: string) => {
+    setPlan(content);
+    setSaveStatus('saving');
+  }, []);
+
+  const handleRatingChange = useCallback((r: RatingValue) => {
+    setRating(r);
+    setSaveStatus('saving');
+  }, []);
+
+  const handleTagAdd = useCallback(() => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
+    }
+  }, [newTag, tags]);
+
+  const handleTagRemove = useCallback((tag: string) => {
+    setTags(tags.filter(t => t !== tag));
+  }, [tags]);
+
+  const handleTagKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTagAdd();
+    }
+  }, [handleTagAdd]);
 
   if (loading) {
     return <div className="flex items-center justify-center h-64 text-apple-gray dark:text-zinc-500">Loading entry...</div>;
@@ -183,83 +200,107 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
         setShowCalendar={setShowCalendar}
         entryDates={entryDates}
         onToggleSidebar={onToggleSidebar}
+        isSidebarOpen={isSidebarOpen}
         streak={streak}
         streakStatus={streakStatus}
         displayStreak={displayStreak}
-        fireArrowConfig={fireArrowConfig}
-        onFireArrowComplete={handleFireArrowComplete}
-        onStreakRef={(ref) => { streakRef.current = ref; }}
       />
 
-      {/* Editor Sections */}
-      <div className="space-y-16 md:space-y-24">
+      {/* Editor Sections Container */}
+      <div className="mx-auto max-w-[var(--card-max-width)] px-[var(--space-l)] space-y-[var(--space-l)] md:space-y-[var(--space-xl)]">
 
-        <section className="group animate-slide-in-from-bottom" style={{ animationDelay: '0.2s' }}>
-          <div className="flex items-center justify-between mb-6">
-            <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest">01 — Narrative</label>
-            <AudioRecorder onTranscriptionComplete={appendNarrative} />
-          </div>
-          <RichTextEditor
-            value={narrative}
-            onChange={setNarrative}
-            animatedPlaceholder={JOURNAL_PROMPTS}
-            onIgnite={handleIgnite}
-            canIgnite={streakStatus === 'unlit'}
-          />
-        </section>
-
-        <section className="group animate-slide-in-from-bottom" style={{ animationDelay: '0.3s' }}>
-          <div className="flex items-center justify-between mb-8">
-            <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest">02 — Analysis & Mood</label>
-            <AudioRecorder onTranscriptionComplete={appendReasoning} />
-          </div>
-          <div className="mb-8"><RatingInput value={rating} onChange={setRating} /></div>
-          <RichTextEditor
-            value={reasoning}
-            onChange={setReasoning}
-            minHeight="80px"
-            animatedPlaceholder={ANALYSIS_PROMPTS}
-            onIgnite={handleIgnite}
-            canIgnite={streakStatus === 'unlit'}
-          />
-        </section>
-
-        <section className="group animate-slide-in-from-bottom" style={{ animationDelay: '0.4s' }}>
-          <div className="flex items-center justify-between mb-6">
-            <label className="block text-xs font-bold text-apple-gray dark:text-zinc-500 uppercase tracking-widest">03 — Strategy</label>
-            <AudioRecorder onTranscriptionComplete={appendPlan} />
-          </div>
-          <RichTextEditor
-            value={plan}
-            onChange={setPlan}
-            minHeight="80px"
-            animatedPlaceholder={STRATEGY_PROMPTS}
-            onIgnite={handleIgnite}
-            canIgnite={streakStatus === 'unlit'}
-          />
-        </section>
-
-        {/* 04 - Daily Summary Section REMOVED */}
-
-        <section className="pt-8 border-t border-gray-200/60 dark:border-white/10 animate-slide-in-from-bottom" style={{ animationDelay: '0.6s' }}>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-apple-gray dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800/80 px-4 py-2 rounded-full transition-colors hover:bg-gray-200 dark:hover:bg-zinc-700">
-              <Tag className="w-4 h-4" />
-              <input
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (() => { if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag(''); } })()}
-                placeholder="Add tag"
-                className="bg-transparent border-none outline-none text-sm min-w-[80px] placeholder:text-gray-400 focus:ring-0"
-              />
-              <button onClick={() => { if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag(''); } }} className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-zinc-600 text-apple-gray transition-colors"><Plus className="w-3 h-3" /></button>
+        <section className="group animate-slide-in-from-bottom @container" style={{ animationDelay: '0.2s' }}>
+          <div className="flex items-center justify-between mb-[var(--space-s)]">
+            <div className="flex items-center gap-2">
+              <span className="text-[0.85rem] tracking-[2px] uppercase text-apple-gray dark:text-white/20 font-medium">NARRATIVE</span>
+              <span className="text-sm text-apple-gray/60 dark:text-white/10">•</span>
+              <span className="text-sm text-apple-gray dark:text-gray-400">What happened today?</span>
             </div>
-            {tags.map(tag => <span key={tag} onClick={() => setTags(tags.filter(t => t !== tag))} className="px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-full text-sm font-medium cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">#{tag}</span>)}
+            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'journal')} />
+            </div>
+          </div>
+
+          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+            <RichTextEditor
+              value={narrative}
+              onChange={handleNarrativeChange}
+              animatedPlaceholder={JOURNAL_PROMPTS}
+            />
           </div>
         </section>
 
+        <section className="group animate-slide-in-from-bottom @container" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center justify-between mb-[var(--space-s)]">
+            <div className="flex items-center gap-2">
+              <span className="text-[0.85rem] tracking-[2px] uppercase text-apple-gray dark:text-white/20 font-medium">ANALYSIS & MOOD</span>
+            </div>
+          </div>
+
+          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+            {/* Rating - First in Analysis */}
+            <div className="mb-[var(--space-m)]">
+              <RatingInput value={rating} onChange={handleRatingChange} />
+            </div>
+
+            <div>
+              {/* Why do you feel this way? */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-apple-gray dark:text-gray-400">Why do you feel this way?</span>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'analysis')} />
+                  </div>
+                </div>
+                <RichTextEditor
+                  value={reasoning}
+                  onChange={handleReasoningChange}
+                  animatedPlaceholder={ANALYSIS_PROMPTS}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="group animate-slide-in-from-bottom @container" style={{ animationDelay: '0.4s' }}>
+          <div className="flex items-center justify-between mb-[var(--space-s)]">
+            <div className="flex items-center gap-2">
+              <span className="text-[0.85rem] tracking-[2px] uppercase text-apple-gray dark:text-white/20 font-medium">STRATEGY</span>
+              <span className="text-sm text-apple-gray/60 dark:text-white/10">•</span>
+              <span className="text-sm text-apple-gray dark:text-gray-400">Plan for tomorrow</span>
+            </div>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'strategy')} />
+            </div>
+          </div>
+
+          <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+            <RichTextEditor
+              value={plan}
+              onChange={handlePlanChange}
+              animatedPlaceholder={STRATEGY_PROMPTS}
+            />
+          </div>
+        </section>
       </div>
+      <section className="pt-8 mt-[var(--space-l)] border-t border-gray-200/60 dark:border-white/10 animate-slide-in-from-bottom" style={{ animationDelay: '0.6s' }}>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-apple-gray dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800/80 px-4 py-2 rounded-full transition-colors hover:bg-gray-200 dark:hover:bg-zinc-700">
+            <Tag className="w-4 h-4" />
+            <input
+              type="text"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={handleTagKeyDown}
+              placeholder="Add tag"
+              className="bg-transparent border-none outline-none text-sm min-w-[80px] placeholder:text-gray-400 focus:ring-0"
+            />
+            <button onClick={handleTagAdd} className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-zinc-600 text-apple-gray transition-colors"><Plus className="w-3 h-3" /></button>
+          </div>
+          {tags.map(tag => <span key={tag} onClick={() => handleTagRemove(tag)} className="px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-full text-sm font-medium cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">#{tag}</span>)}
+        </div>
+      </section>
+
     </div>
   );
 };

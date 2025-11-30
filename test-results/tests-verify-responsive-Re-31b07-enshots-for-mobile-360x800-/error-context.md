@@ -1,0 +1,101 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - generic [ref=e9]: M
+          - generic [ref=e10]: Maurik
+        - button [ref=e11] [cursor=pointer]:
+          - img [ref=e12]
+      - generic [ref=e14]:
+        - button "Journal" [ref=e15] [cursor=pointer]:
+          - img [ref=e16]
+          - generic [ref=e18]: Journal
+        - button "History" [ref=e19] [cursor=pointer]:
+          - img [ref=e20]
+          - generic [ref=e24]: History
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: Free Trial
+          - generic [ref=e29]: Free Plan
+        - generic [ref=e31]:
+          - generic [ref=e32]: Voice
+          - generic [ref=e33]: 0%
+      - button "Settings" [ref=e36] [cursor=pointer]:
+        - img [ref=e37]
+        - generic [ref=e40]: Settings
+  - main [ref=e42]:
+    - generic [ref=e44]:
+      - generic:
+        - generic: Save Failed
+      - generic [ref=e45]:
+        - button "Toggle sidebar" [active] [ref=e46] [cursor=pointer]:
+          - img [ref=e47]
+        - button "Sunday, November 30" [ref=e49] [cursor=pointer]:
+          - heading "Sunday, November 30" [level=1] [ref=e50]
+          - img [ref=e51]
+        - generic "Streak 0" [ref=e54]:
+          - img [ref=e56]
+          - generic [ref=e58]: "0"
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]: NARRATIVE
+              - generic [ref=e64]: •
+              - generic [ref=e65]: What happened today?
+            - button "Dictate" [ref=e68] [cursor=pointer]:
+              - img [ref=e69]
+              - generic [ref=e72]: Dictate
+          - generic [ref=e74]:
+            - generic:
+              - generic: What is a compliment you received recently?
+        - generic [ref=e76]:
+          - generic [ref=e79]: ANALYSIS & MOOD
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - generic [ref=e82]: Rating of the Day
+              - generic [ref=e84]:
+                - button "-2" [ref=e85] [cursor=pointer]
+                - button "-1" [ref=e86] [cursor=pointer]
+                - button "0" [ref=e87] [cursor=pointer]
+                - button "+1" [ref=e88] [cursor=pointer]
+                - button "+2" [ref=e89] [cursor=pointer]
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e92]:
+                  - generic [ref=e93]: Why do you feel this way?
+                  - button "Dictate" [ref=e96] [cursor=pointer]:
+                    - img [ref=e97]
+                    - generic [ref=e100]: Dictate
+                - generic [ref=e101]:
+                  - generic:
+                    - generic: Why do you think you feel this way?
+              - generic [ref=e104]:
+                - generic [ref=e105]:
+                  - generic [ref=e106]: What are you tolerating?
+                  - button "Dictate" [ref=e109] [cursor=pointer]:
+                    - img [ref=e110]
+                    - generic [ref=e113]: Dictate
+                - generic [ref=e115]: What are you putting up with?
+        - generic [ref=e116]:
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - generic [ref=e119]: STRATEGY
+              - generic [ref=e120]: •
+              - generic [ref=e121]: Plan for tomorrow
+            - button "Dictate" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e128]: Dictate
+          - generic [ref=e130]:
+            - generic:
+              - generic: What is the best that could happen?
+      - generic [ref=e134]:
+        - img [ref=e135]
+        - textbox "Add tag" [ref=e138]
+        - button [ref=e139] [cursor=pointer]:
+          - img [ref=e140]
+```

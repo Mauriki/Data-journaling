@@ -4,7 +4,7 @@ import LoginPage from './components/LoginPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import { getStreak, runMigration } from './services/storageService';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { Sidebar } from './components/Sidebar';
+import { Sidebar } from './components/Sidebar/Sidebar';
 
 // Lazy Load Heavy Components
 const HistoryDashboard = React.lazy(() => import('./components/HistoryDashboard'));
@@ -23,17 +23,33 @@ const AppContent: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
 
-  // Mobile detection
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile); // Default open on desktop
+  // Responsive State
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
+  const [isTablet, setIsTablet] = useState(window.innerWidth >= 600 && window.innerWidth < 1024);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Default open
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
+      const width = window.innerWidth;
+      const mobile = width < 600;
+      const tablet = width >= 600 && width < 1024;
+
       setIsMobile(mobile);
-      if (mobile) setIsSidebarOpen(false);
-      else setIsSidebarOpen(true);
+      setIsTablet(tablet);
+
+      // Auto-collapse logic
+      if (mobile) {
+        setIsSidebarOpen(false);
+      } else if (tablet) {
+        setIsSidebarOpen(false); // Default collapsed on tablet
+      } else {
+        setIsSidebarOpen(true); // Default open on desktop
+      }
     };
+
+    // Initial check
+    handleResize();
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -110,15 +126,18 @@ const AppContent: React.FC = () => {
         streak={streak}
         onOpenSettings={() => setIsSettingsOpen(true)}
         isMobile={isMobile}
+        isTablet={isTablet}
         isPro={isPro}
-        usage={usage}
+        usage={usage ? { count: usage.transcriptionSeconds, limit: 300 } : undefined}
       />
 
       {/* Main Content Area */}
       <div
         className={`
-          flex-1 h-full relative transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)
-          ${isMobile ? 'ml-0 w-full' : (isSidebarOpen ? 'ml-[240px]' : 'ml-[72px]')}
+          flex-1 h-full relative transition-all duration-300 ease-in-out
+          ${isMobile ? 'ml-0 w-full' : ''}
+          ${!isMobile && isTablet ? (isSidebarOpen ? 'ml-[240px]' : 'ml-[72px]') : ''}
+          ${!isMobile && !isTablet ? 'ml-[260px]' : ''}
         `}
       >
         <main className="h-full overflow-y-auto no-scrollbar scroll-smooth pb-safe-bottom">
@@ -128,7 +147,8 @@ const AppContent: React.FC = () => {
                 initialDate={editDate || new Date().toISOString().split('T')[0]}
                 onSave={updateStreak}
                 onUpgrade={() => { }}
-                onToggleSidebar={isMobile ? () => setIsSidebarOpen(true) : undefined}
+                onToggleSidebar={isMobile || isTablet ? () => setIsSidebarOpen(!isSidebarOpen) : undefined}
+                isSidebarOpen={isSidebarOpen}
                 streak={streak}
               />
             ) : (

@@ -44,31 +44,60 @@ exports.transcribeAudio = onRequest(
             const rawText = transcription.text || "";
 
             // Step 2: Format with GPT for natural, readable structure
-            const formattingPrompt = `Format this journal transcription to be clean and readable.
+            // Step 2: Format with GPT using the advanced system prompt
+            const systemPrompt = `You are a senior editor + structured content processor for voice-to-text transcripts. Your job is to transform raw ASR output (the transcript) into a highly readable, structured journal entry and machine-friendly JSON segments — while strictly following the "no new words" policy.
 
-RULES:
-1. NATURAL SPACING: Add paragraph breaks when YOU sense a meaningful shift in topic or activity.
-   - Don't force it into time periods. Use your judgment.
-   - Example: "I woke up, did my routine.\n\nWent outside for a bit. Came back and worked on the app.\n\nIn the evening I ate, walked, and watched lectures."
-   - Keep related activities together. Separate distinct moments.
+PRINCIPLES / HARD RULES:
+1. **NO NEW WORDS**: Do not introduce new semantic content. Only fix punctuation/spacing, remove fillers sparingly, and reflow sentences.
+2. **SEGMENTATION**: Split segments by natural pauses.
+3. **TOPIC DETECTION**: Detect topic changes and use headers like "### Topic: [Name]".
+4. **BULLETS**: Convert enumerations to bullets.
+5. **EMPHASIS**: Bold short phrases explicitly emphasized.
+6. **OUTPUT FORMAT**: Return a JSON object with keys:
+   {
+    "polished_markdown": "...",
+    "summary_bullets": ["...", "..."],
+    "segments_json": [...],
+    "warnings": [...]
+   }
 
-2. MINIMAL EMPHASIS: Bold (**text**) only 2-3 truly key activities.
-   - Example: "worked on my **deep work session**" or "did **yoga nidra**"
+PROCESS:
+1. Parse transcript.
+2. Remove fillers sparingly.
+3. Produce polished_markdown, summary_bullets, and segments_json.
+4. Respect NO NEW WORDS.
 
-3. CLEANUP: Remove filler words (um, ah, like, you know) and fix grammar.
-
-4. OUTPUT: Just the formatted text. No intro.
-
-Raw transcription:
+Input Transcript:
 ${rawText}`;
 
             const formatted = await openai.chat.completions.create({
                 model: "gpt-4o-mini",
-                messages: [{ role: "user", content: formattingPrompt }],
+                messages: [
+                    { role: "system", content: "You are a helpful assistant that outputs JSON." },
+                    { role: "user", content: systemPrompt }
+                ],
                 temperature: 0.3,
+                response_format: { type: "json_object" },
             });
 
-            const finalText = formatted.choices[0]?.message?.content || rawText;
+            const content = formatted.choices[0]?.message?.content;
+            let finalText = rawText;
+
+            try {
+                const parsed = JSON.parse(content);
+                // We primarily want the polished markdown for the editor
+                finalText = parsed.polished_markdown || rawText;
+
+                // Optionally, we could append summary bullets if they exist and are useful
+                if (parsed.summary_bullets && parsed.summary_bullets.length > 0) {
+                    // For now, let's just return the polished markdown to match frontend expectation
+                    // But we could append them like:
+                    // finalText += "\n\n### Summary\n" + parsed.summary_bullets.map(b => "- " + b).join("\n");
+                }
+            } catch (e) {
+                console.error("Failed to parse GPT JSON response:", e);
+                finalText = content || rawText; // Fallback
+            }
 
             res.json({ text: finalText });
         } catch (error) {

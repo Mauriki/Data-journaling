@@ -1,37 +1,70 @@
 :root {
-  /* Spacing - 8px Scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
+  /* Base scale */
+  --base: 8px;
+
+  /* Spacing - Strict 8px Grid */
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-s: 12px;
+  --space-m: 16px;
+  --space-l: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  /* Legacy mapping for existing components */
+  --space-1: var(--space-xxs);
+  --space-2: var(--space-xs);
+  --space-3: var(--space-s);
+  --space-4: var(--space-m);
   --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
+  --space-6: var(--space-l);
+  --space-8: var(--space-xl);
   --space-10: 40px;
-  --space-12: 48px;
+  --space-12: var(--space-xxl);
   --space-16: 64px;
   --space-20: 80px;
   --space-24: 96px;
   --space-32: 128px;
 
-  /* Fluid Typography */
-  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
-  --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
-  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --text-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);
-  --text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  /* Fluid Typography using clamp */
+  --font-sm: clamp(0.95rem, 0.9rem + 0.2vw, 1rem);
+  /* 15-16px */
+  --font-base: clamp(1rem, 1rem + 0.4vw, 1.125rem);
+  /* 16-18px */
+  --font-lg: clamp(1.125rem, 1.125rem + 0.8vw, 1.5rem);
+  /* 18-24px */
+  --font-xl: clamp(1.75rem, 2.2vw + 1.2rem, 3rem);
+  /* page title */
+
+  /* Legacy typography mapping */
+  --text-xs: 0.75rem;
+  --text-sm: var(--font-sm);
+  --text-base: var(--font-base);
+  --text-lg: var(--font-lg);
+  --text-xl: var(--font-xl);
   --text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
   --text-3xl: clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem);
   --text-4xl: clamp(2.25rem, 2rem + 1.25vw, 3rem);
   --text-5xl: clamp(3rem, 2.5rem + 2.5vw, 4.5rem);
 
+  /* UI Sizing */
+  --topbar-height-mobile: 56px;
+  --topbar-height-tablet: 72px;
+  --topbar-height-desktop: 88px;
+  --header-height: clamp(var(--topbar-height-mobile), 8vh, var(--topbar-height-desktop));
+
+  --sidebar-width-closed: 80px;
+  --sidebar-width-open: 280px;
+  --sidebar-width: var(--sidebar-width-open);
+  --sidebar-width-collapsed: var(--sidebar-width-closed);
+
+  --card-max-width: 900px;
+
+  /* Accent Colors */
+  --accent-fire: #ff6b38;
+  --accent-bg: #0f0f10;
+
   /* Safe Areas */
   --safe-top: env(safe-area-inset-top, 20px);
   --safe-bottom: env(safe-area-inset-bottom, 20px);
-  
-  /* Layout */
-  --header-height: clamp(56px, 48px + 2vw, 96px);
-  --sidebar-width: 240px;
-  --sidebar-width-collapsed: 72px;
-  --content-max-width: 1024px;
 }

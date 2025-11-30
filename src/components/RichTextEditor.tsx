@@ -8,8 +8,6 @@ interface RichTextEditorProps {
   placeholder?: string;
   minHeight?: string;
   animatedPlaceholder?: string[];
-  onIgnite?: (coords: { x: number; y: number }) => void;
-  canIgnite?: boolean;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -17,9 +15,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   onChange,
   placeholder,
   animatedPlaceholder,
-  minHeight = '120px',
-  onIgnite,
-  canIgnite
+  minHeight = '120px'
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [showToolbar, setShowToolbar] = useState(false);
@@ -51,17 +47,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const newValue = e.currentTarget.innerHTML;
     onChange(newValue);
-
-    // Check for ignition
-    if (canIgnite && onIgnite) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        // Use the center of the cursor/selection
-        onIgnite({ x: rect.left, y: rect.top });
-      }
-    }
 
     // Original slash command logic (re-integrated)
     if (contentRef.current) {
@@ -135,15 +120,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    // Check for ignition on keydown
-    if (canIgnite && onIgnite) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        onIgnite({ x: rect.left, y: rect.top });
-      }
-    }
 
     // Allow Backspace to delete lists
     if (e.key === 'Backspace') {
