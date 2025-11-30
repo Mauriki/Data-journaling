@@ -152,10 +152,10 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative flex items-center justify-between">
           <button
             onClick={() => setShowCalendar(!showCalendar)}
-            className="group flex items-center gap-3 text-3xl md:text-5xl font-bold text-apple-text dark:text-white tracking-tight leading-tight hover:opacity-80 transition-opacity"
+            className="group flex items-center gap-3 text-3xl md:text-4xl font-bold text-apple-text dark:text-white tracking-tight leading-tight hover:opacity-80 transition-opacity"
           >
             <span>{new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
             <ChevronDown className={`w-6 h-6 md:w-8 md:h-8 text-gray-400 transition-transform duration-300 ${showCalendar ? 'rotate-180' : ''}`} />
@@ -174,6 +174,12 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
               </div>
             </div>
           )}
+
+          {/* Desktop Streak Indicator */}
+          <div className="hidden md:flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 px-4 py-2 rounded-full border border-orange-100 dark:border-orange-800/50 shadow-sm">
+            <StreakFlame size={20} />
+            <span className="text-base font-bold text-orange-600 dark:text-orange-400">{streak}</span>
+          </div>
         </div>
       </header>
 

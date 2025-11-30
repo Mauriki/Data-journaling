@@ -24,25 +24,7 @@ const StreakFlame: React.FC<StreakFlameProps> = ({ size = 24, className = '' }) 
             />
 
             {/* Steam Particles */}
-            {[...Array(3)].map((_, i) => (
-                <motion.div
-                    key={i}
-                    initial={{ y: 0, x: 0, opacity: 0, scale: 0.5 }}
-                    animate={{
-                        y: -size * 1.5,
-                        x: (i - 1) * (size * 0.3), // Spread slightly
-                        opacity: [0, 0.4, 0],
-                        scale: [0.5, 1, 0.5],
-                    }}
-                    transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        delay: i * 0.6,
-                        ease: "easeOut"
-                    }}
-                    className="absolute top-0 w-1.5 h-1.5 bg-white/40 rounded-full blur-[1px]"
-                />
-            ))}
+
 
             {/* Base Flame (Orange/Red) */}
             <motion.div
@@ -97,7 +79,7 @@ const StreakFlame: React.FC<StreakFlameProps> = ({ size = 24, className = '' }) 
                     repeatType: "reverse",
                     ease: "easeInOut"
                 }}
-                className="absolute bottom-[10%] w-[50%] h-[50%] origin-bottom"
+                className="absolute bottom-[15%] w-[40%] h-[40%] origin-bottom"
             >
                 <svg
                     viewBox="0 0 24 24"

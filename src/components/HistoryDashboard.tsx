@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { JournalEntry } from '../types';
 import { getEntries, deleteEntry } from '../services/storageService';
-import { generateWeeklyReview } from '../services/openaiService';
-import { Search, ChevronRight, Sparkles, Trash2, AlertTriangle, FileText } from 'lucide-react';
+
+import { Search, ChevronRight, Trash2, AlertTriangle, FileText } from 'lucide-react';
 
 interface HistoryDashboardProps {
   onEditEntry: (date: string) => void;
@@ -12,8 +12,7 @@ const HistoryDashboard: React.FC<HistoryDashboardProps> = ({ onEditEntry }) => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [review, setReview] = useState<string | null>(null);
-  const [loadingReview, setLoadingReview] = useState(false);
+
   const [loadingData, setLoadingData] = useState(true);
   const [entryToDelete, setEntryToDelete] = useState<JournalEntry | null>(null);
 
@@ -42,13 +41,7 @@ const HistoryDashboard: React.FC<HistoryDashboardProps> = ({ onEditEntry }) => {
     setFilteredEntries(results);
   }, [searchTerm, entries]);
 
-  const handleGenerateReview = async () => {
-    if (entries.length === 0) return;
-    setLoadingReview(true);
-    const result = await generateWeeklyReview(entries.slice(0, 7));
-    setReview(result);
-    setLoadingReview(false);
-  };
+
 
   const handleDeleteClick = (e: React.MouseEvent, entry: JournalEntry) => {
     e.stopPropagation();
@@ -107,14 +100,7 @@ const HistoryDashboard: React.FC<HistoryDashboardProps> = ({ onEditEntry }) => {
         </div>
       </div>
 
-      <div className="mb-10 bg-white dark:bg-zinc-800/40 rounded-2xl border border-gray-100 dark:border-white/5 shadow-apple p-6 md:p-8 relative overflow-hidden group transition-all">
-        <div className="absolute top-0 right-0 p-4 opacity-10 dark:opacity-5 group-hover:opacity-20"><Sparkles className="w-24 h-24 text-blue-600" /></div>
-        <div className="flex justify-between items-start mb-4 relative z-10">
-          <h3 className="font-bold text-xs uppercase tracking-widest text-apple-gray dark:text-zinc-500">Weekly Intelligence</h3>
-          {!review && <button onClick={handleGenerateReview} disabled={loadingReview} className="text-xs font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 rounded-full">{loadingReview ? "Analyzing..." : "Generate Report"}</button>}
-        </div>
-        {review ? <div className="prose prose-sm max-w-none dark:prose-invert leading-relaxed">{review.split('\n').map((line, i) => <p key={i} className="mb-2">{line}</p>)}</div> : <p className="text-apple-gray dark:text-zinc-500 italic text-sm">Generate an AI summary of your recent data patterns...</p>}
-      </div>
+
 
       <div className="space-y-3">
         {filteredEntries.length === 0 ? (
