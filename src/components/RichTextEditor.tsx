@@ -282,7 +282,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
 
       <div
         ref={contentRef}
-        className="editor-content w-full bg-transparent text-[17px] text-apple-text dark:text-gray-100 leading-relaxed outline-none font-serif empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-zinc-600"
+        className="editor-content w-full bg-transparent text-base md:text-[17px] text-apple-text dark:text-gray-100 leading-relaxed outline-none font-serif empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-zinc-600"
         contentEditable
         onInput={handleInput}
         onKeyDown={handleKeyDown}
@@ -292,7 +292,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
       {!value && animatedPlaceholder && (
         <TypewriterPlaceholder
           prompts={animatedPlaceholder}
-          className="text-[17px] font-serif leading-relaxed text-apple-text dark:text-gray-100"
+          className="text-base md:text-[17px] font-serif leading-relaxed text-apple-text dark:text-gray-100"
         />
       )}
     </div>

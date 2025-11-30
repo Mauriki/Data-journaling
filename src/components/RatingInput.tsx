@@ -17,16 +17,16 @@ const RatingInput: React.FC<RatingInputProps> = ({ value, onChange }) => {
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-      <div className="flex items-center gap-2 bg-white rounded-xl border border-ui-border p-1.5 shadow-sm">
+      <div className="flex items-center gap-1 sm:gap-2 bg-white rounded-xl border border-ui-border p-1.5 shadow-sm">
         {options.map((opt) => {
           const isSelected = value === opt.val;
-          
+
           // Color logic
           let bgClass = 'hover:bg-gray-50 text-gray-500';
           if (isSelected) {
-             if (opt.val > 0) bgClass = 'bg-green-100 text-green-700 shadow-sm';
-             else if (opt.val < 0) bgClass = 'bg-red-100 text-red-700 shadow-sm';
-             else bgClass = 'bg-gray-200 text-gray-800 shadow-sm';
+            if (opt.val > 0) bgClass = 'bg-green-100 text-green-700 shadow-sm';
+            else if (opt.val < 0) bgClass = 'bg-red-100 text-red-700 shadow-sm';
+            else bgClass = 'bg-gray-200 text-gray-800 shadow-sm';
           }
 
           return (
@@ -36,7 +36,7 @@ const RatingInput: React.FC<RatingInputProps> = ({ value, onChange }) => {
               onClick={() => onChange(opt.val)}
               className={`
                 relative flex flex-col items-center justify-center
-                w-10 h-10 rounded-lg transition-all duration-200
+                w-10 h-10 sm:w-12 sm:h-12 rounded-lg transition-all duration-200
                 font-medium text-sm
                 ${bgClass}
               `}
@@ -46,7 +46,7 @@ const RatingInput: React.FC<RatingInputProps> = ({ value, onChange }) => {
           );
         })}
       </div>
-      
+
       <div className="h-6 text-sm font-medium text-ink-secondary animate-in fade-in">
         {value !== null ? options.find(o => o.val === value)?.label : <span className="opacity-50">Select a rating</span>}
       </div>

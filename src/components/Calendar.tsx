@@ -91,7 +91,7 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onSelectDate, entryDa
     };
 
     return (
-        <div className="p-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-white/10 w-[300px] animate-in zoom-in-95 duration-200">
+        <div className="p-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-white/10 w-[280px] sm:w-[300px] animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between mb-6 px-2">
                 <button onClick={handlePrevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
                     <ChevronLeft className="w-5 h-5 text-gray-500" />

@@ -138,7 +138,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
       <header className="mb-12 md:mb-16 pb-6 border-b border-gray-200/60 dark:border-white/10 animate-slide-in-from-bottom" style={{ animationDelay: '0.1s' }}>
 
         {/* Mobile Top Row: Menu & Streak */}
-        <div className="flex md:hidden items-center justify-between mb-2">
+        <div className="flex md:hidden items-center justify-between mb-4">
           <button
             onClick={onToggleSidebar}
             className="p-2 -ml-2 text-apple-gray dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors active:scale-95"
@@ -155,7 +155,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
         <div className="relative">
           <button
             onClick={() => setShowCalendar(!showCalendar)}
-            className="group flex items-center gap-3 text-4xl md:text-6xl font-bold text-apple-text dark:text-white tracking-tight leading-tight hover:opacity-80 transition-opacity"
+            className="group flex items-center gap-3 text-3xl md:text-5xl font-bold text-apple-text dark:text-white tracking-tight leading-tight hover:opacity-80 transition-opacity"
           >
             <span>{new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
             <ChevronDown className={`w-6 h-6 md:w-8 md:h-8 text-gray-400 transition-transform duration-300 ${showCalendar ? 'rotate-180' : ''}`} />
