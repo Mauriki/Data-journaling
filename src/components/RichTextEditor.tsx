@@ -8,9 +8,19 @@ interface RichTextEditorProps {
   placeholder?: string;
   minHeight?: string;
   animatedPlaceholder?: string[];
+  onIgnite?: (coords: { x: number; y: number }) => void;
+  canIgnite?: boolean;
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder, minHeight = '120px', animatedPlaceholder }) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({
+  value,
+  onChange,
+  placeholder,
+  animatedPlaceholder,
+  minHeight = '120px',
+  onIgnite,
+  canIgnite
+}) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
@@ -38,11 +48,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
     };
   };
 
-  const handleInput = () => {
+  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+    const newValue = e.currentTarget.innerHTML;
+    onChange(newValue);
+
+    // Check for ignition
+    if (canIgnite && onIgnite) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        // Use the center of the cursor/selection
+        onIgnite({ x: rect.left, y: rect.top });
+      }
+    }
+
+    // Original slash command logic (re-integrated)
     if (contentRef.current) {
       const text = contentRef.current.textContent || '';
-
-      // Check for slash command
       if (text.endsWith('/')) {
         const coords = getCaretCoordinates();
         if (coords) {
@@ -59,8 +82,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
           setShowToolbar(false);
         }
       }
-
-      onChange(contentRef.current.innerHTML);
     }
   };
 
@@ -114,6 +135,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Check for ignition on keydown
+    if (canIgnite && onIgnite) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        onIgnite({ x: rect.left, y: rect.top });
+      }
+    }
+
     // Allow Backspace to delete lists
     if (e.key === 'Backspace') {
       const selection = window.getSelection();

@@ -9,6 +9,7 @@ import RichTextEditor from './RichTextEditor';
 import AudioRecorder from './AudioRecorder';
 import { Tag, Plus, Menu, ChevronDown } from 'lucide-react';
 import StreakFlame from './StreakFlame';
+import FireArrow from './FireArrow';
 import Calendar from './Calendar';
 import { JOURNAL_PROMPTS, ANALYSIS_PROMPTS, STRATEGY_PROMPTS } from '../data/prompts';
 
@@ -38,10 +39,31 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
   const [showCalendar, setShowCalendar] = useState(false);
   const [entryDates, setEntryDates] = useState<string[]>([]);
 
+  // Fire Arrow & Streak State
+  const [streakStatus, setStreakStatus] = useState<'unlit' | 'igniting' | 'burning'>('burning');
+  const [fireArrowConfig, setFireArrowConfig] = useState<{ start: { x: number, y: number }, end: { x: number, y: number } } | null>(null);
+  const streakRef = React.useRef<HTMLDivElement>(null);
+  const [displayStreak, setDisplayStreak] = useState(streak);
+
+  useEffect(() => {
+    setDisplayStreak(streak);
+  }, [streak]);
+
   useEffect(() => {
     const init = async () => {
       setLoading(true);
       const entry = await getEntryByDate(initialDate);
+
+      // Determine initial fire status
+      const isToday = new Date(initialDate).toDateString() === new Date().toDateString();
+      const hasContent = entry && (entry.narrative || entry.rating || entry.reasoning || entry.planForTomorrow);
+
+      if (isToday && !hasContent) {
+        setStreakStatus('unlit');
+      } else {
+        setStreakStatus('burning');
+      }
+
       if (entry) {
         setNarrative(entry.narrative);
         setRating(entry.rating);
@@ -116,6 +138,29 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
   const appendReasoning = useCallback((text: string) => setReasoning(prev => prev + text), []);
   const appendPlan = useCallback((text: string) => setPlan(prev => prev + text), []);
 
+  const handleIgnite = useCallback((startCoords: { x: number, y: number }) => {
+    if (streakStatus !== 'unlit') return;
+
+    // Get destination coordinates (center of streak icon)
+    if (streakRef.current) {
+      const rect = streakRef.current.getBoundingClientRect();
+      const endCoords = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
+      };
+
+      setFireArrowConfig({ start: startCoords, end: endCoords });
+      setStreakStatus('igniting');
+    }
+  }, [streakStatus]);
+
+  const handleFireArrowComplete = useCallback(() => {
+    setStreakStatus('burning');
+    setFireArrowConfig(null);
+    // Bounce animation for streak number could be added here if we had a ref to the number or a separate component
+    setDisplayStreak(prev => prev + 1); // Optimistic update if needed, or just visual
+  }, []);
+
   if (loading) {
     return <div className="flex items-center justify-center h-64 text-apple-gray dark:text-zinc-500">Loading entry...</div>;
   }
@@ -146,9 +191,9 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             <Menu className="w-6 h-6" />
           </button>
 
-          <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-800/50 shadow-sm">
-            <StreakFlame size={18} />
-            <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{streak}</span>
+          <div ref={streakRef} className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-800/50 shadow-sm">
+            <StreakFlame size={18} status={streakStatus} />
+            <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{displayStreak}</span>
           </div>
         </div>
 
@@ -176,12 +221,21 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
           )}
 
           {/* Desktop Streak Indicator */}
-          <div className="hidden md:flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 px-4 py-2 rounded-full border border-orange-100 dark:border-orange-800/50 shadow-sm">
-            <StreakFlame size={20} />
-            <span className="text-base font-bold text-orange-600 dark:text-orange-400">{streak}</span>
+          <div ref={streakRef} className="hidden md:flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 px-4 py-2 rounded-full border border-orange-100 dark:border-orange-800/50 shadow-sm">
+            <StreakFlame size={20} status={streakStatus} />
+            <span className="text-base font-bold text-orange-600 dark:text-orange-400">{displayStreak}</span>
           </div>
         </div>
       </header>
+
+      {/* Fire Arrow Overlay */}
+      {fireArrowConfig && (
+        <FireArrow
+          startPos={fireArrowConfig.start}
+          endPos={fireArrowConfig.end}
+          onComplete={handleFireArrowComplete}
+        />
+      )}
 
       {/* Editor Sections */}
       <div className="space-y-16">
@@ -195,6 +249,8 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             value={narrative}
             onChange={setNarrative}
             animatedPlaceholder={JOURNAL_PROMPTS}
+            onIgnite={handleIgnite}
+            canIgnite={streakStatus === 'unlit'}
           />
         </section>
 
@@ -209,6 +265,8 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             onChange={setReasoning}
             minHeight="80px"
             animatedPlaceholder={ANALYSIS_PROMPTS}
+            onIgnite={handleIgnite}
+            canIgnite={streakStatus === 'unlit'}
           />
         </section>
 
@@ -222,6 +280,8 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             onChange={setPlan}
             minHeight="80px"
             animatedPlaceholder={STRATEGY_PROMPTS}
+            onIgnite={handleIgnite}
+            canIgnite={streakStatus === 'unlit'}
           />
         </section>
 
