@@ -65,8 +65,8 @@ const TopBar: React.FC<TopBarProps> = ({
                         onClick={handleCalendarToggle}
                         className="group flex items-center gap-1.5 md:gap-2 text-left hover:opacity-80 transition-opacity min-w-0"
                     >
-                        <h1 className="text-lg md:text-[length:var(--font-xl)] font-bold text-apple-text dark:text-white tracking-tight leading-none truncate">
-                            {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                        <h1 className="text-base md:text-2xl font-bold text-apple-text dark:text-white tracking-tight leading-none truncate">
+                            {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                         </h1>
                         <ChevronDown className={`w-4 h-4 md:w-6 md:h-6 text-gray-400 transition-transform duration-300 flex-shrink-0 ${showCalendar ? 'rotate-180' : ''}`} />
                     </button>

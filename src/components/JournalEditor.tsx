@@ -207,7 +207,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
       />
 
       {/* Editor Sections Container */}
-      <div className="mx-auto max-w-[var(--card-max-width)] px-0 md:px-[var(--space-l)] space-y-4 md:space-y-[var(--space-xl)]">
+      <div className="mx-auto max-w-4xl px-3 md:px-5 space-y-4 md:space-y-6">
 
         <section className="group animate-slide-in-from-bottom @container" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-between mb-[var(--space-s)]">

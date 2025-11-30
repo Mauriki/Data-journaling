@@ -1,0 +1,119 @@
+/* Fire Animation Keyframes */
+@keyframes flame-outer {
+
+    0%,
+    100% {
+        transform: scale(1) skewX(0deg);
+    }
+
+    25% {
+        transform: scale(1.05, 1.05) skewX(1deg);
+    }
+
+    50% {
+        transform: scale(0.95, 1.05) skewX(-1deg);
+    }
+
+    75% {
+        transform: scale(1.05, 0.95) skewX(1deg);
+    }
+}
+
+@keyframes flame-inner {
+
+    0%,
+    100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(0.9) translate(0, 1px);
+        opacity: 0.6;
+    }
+}
+
+@keyframes ember-rise-1 {
+    0% {
+        transform: translate(-50%, 0) scale(1);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-20%, -15px) scale(0);
+        opacity: 0;
+    }
+}
+
+@keyframes ember-rise-2 {
+    0% {
+        transform: translate(-50%, 0) scale(1);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-80%, -12px) scale(0);
+        opacity: 0;
+    }
+}
+
+.animate-flame-outer {
+    animation: flame-outer 2s infinite ease-in-out;
+}
+
+.animate-flame-inner {
+    animation: flame-inner 1.5s infinite ease-in-out;
+}
+
+.animate-ember-1 {
+    animation: ember-rise-1 2s infinite linear;
+    animation-delay: 0s;
+}
+
+.animate-ember-2 {
+    animation: ember-rise-2 2.5s infinite linear;
+    animation-delay: 1.2s;
+}
+
+/* Ripple Button Effect */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.ripple-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    transform: scale(0);
+    pointer-events: none;
+}
+
+.ripple-button:active::after {
+    animation: ripple 0.6s ease-out;
+}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Book, History, Settings, LogOut } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { useAuth } from '../../contexts/AuthContext';
+import UsageIndicator from './UsageIndicator';
 
 // --- Types ---
 type View = 'journal' | 'history';
@@ -121,6 +122,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     collapsed={collapsed}
                 />
             </div>
+
+            {/* Usage Indicator (only in expanded view) */}
+            {!collapsed && (
+                <div className="px-3 mb-3">
+                    <UsageIndicator />
+                </div>
+            )}
 
             {/* Footer Actions */}
             <div className="p-3 mt-auto border-t border-black/5 dark:border-white/5 space-y-1">
