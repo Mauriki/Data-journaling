@@ -7,31 +7,10 @@ import { deleteAccount } from '../services/accountService';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpgrade?: () => void;
   onContact?: () => void;
 }
 
-const ProBadge = ({ size = "sm", className = "" }: { size?: "sm" | "md" | "lg", className?: string }) => {
-  const sizeClasses = {
-    sm: "text-[10px] px-1.5 py-0.5",
-    md: "text-xs px-2 py-1",
-    lg: "text-sm px-3 py-1.5"
-  };
-  const iconSizes = {
-    sm: 10,
-    md: 12,
-    lg: 14
-  };
-
-  return (
-    <span className={`inline-flex items-center gap-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-full ${sizeClasses[size]} ${className}`}>
-      <Crown size={iconSizes[size]} />
-      <span>PRO</span>
-    </span>
-  );
-};
-
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onUpgrade, onContact }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onContact }) => {
   const { user, isGuest, logout, darkMode, toggleDarkMode } = useAuth();
 
   const [exporting, setExporting] = useState(false);

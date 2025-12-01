@@ -7,7 +7,6 @@ import { useAuth } from '../contexts/AuthContext';
 import RatingInput from './RatingInput';
 import RichTextEditor from './RichTextEditor';
 import AudioRecorder from './AudioRecorder';
-import { Tag, Plus } from 'lucide-react';
 import TopBar from './TopBar';
 import { JOURNAL_PROMPTS, ANALYSIS_PROMPTS, STRATEGY_PROMPTS } from '../data/prompts';
 
@@ -31,7 +30,6 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
 
     const [aiInsight, setAiInsight] = useState<string | undefined>(undefined);
     const [tags, setTags] = useState<string[]>([]);
-    const [newTag, setNewTag] = useState('');
 
     const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
     const [loading, setLoading] = useState(true);
@@ -158,23 +156,6 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
         setRating(r);
         setSaveStatus('saving');
     }, []);
-
-    const handleTagAdd = useCallback(() => {
-        if (newTag.trim() && !tags.includes(newTag.trim())) {
-            setTags([...tags, newTag.trim()]);
-            setNewTag('');
-        }
-    }, [newTag, tags]);
-
-    const handleTagRemove = useCallback((tag: string) => {
-        setTags(tags.filter(t => t !== tag));
-    }, [tags]);
-
-    const handleTagKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleTagAdd();
-        }
-    }, [handleTagAdd]);
 
     if (loading) {
         return <div className="flex items-center justify-center h-64 text-apple-gray dark:text-zinc-500">Loading entry...</div>;

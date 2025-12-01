@@ -69,7 +69,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     isMobile,
     isTablet
 }) => {
-    const { logout, usage, isPro } = useAuth();
+    const { logout, usage: authUsage, isPro } = useAuth();
+
+    // Use auth usage for the actual data (has transcriptionSeconds)
+    const usageData = authUsage;
 
     // Handle view change wrapper
     const handleViewChange = useCallback((view: View) => {
@@ -105,7 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             {/* Usage Progress Indicator */}
-            {!isPro && !collapsed && usage && (
+            {!isPro && !collapsed && usageData && (
                 <div
                     onClick={handleSettings}
                     className="mx-3 mb-2 p-3 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-xl cursor-pointer hover:shadow-md transition-shadow"
@@ -117,22 +120,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-600 dark:text-gray-400">
-                                {Math.floor(usage.count / 60)} of {Math.floor(usage.limit / 60)} min used
+                                {Math.floor(usageData.transcriptionSeconds / 60)} of 15 min used
                             </span>
                             <span className="text-gray-500 dark:text-gray-400 font-medium">
-                                {Math.round((usage.count / usage.limit) * 100)}%
+                                {Math.round((usageData.transcriptionSeconds / 900) * 100)}%
                             </span>
                         </div>
                         <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div
-                                className={`h-full rounded-full transition-all duration-300 ${usage.count / usage.limit >= 0.8
-                                        ? 'bg-gradient-to-r from-orange-500 to-red-500'
-                                        : 'bg-gradient-to-r from-purple-500 to-blue-500'
+                                className={`h-full rounded-full transition-all duration-300 ${(usageData.transcriptionSeconds / 900) >= 0.8
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                    : 'bg-gradient-to-r from-purple-500 to-blue-500'
                                     }`}
-                                style={{ width: `${Math.min((usage.count / usage.limit) * 100, 100)}%` }}
+                                style={{ width: `${Math.min((usageData.transcriptionSeconds / 900) * 100, 100)}%` }}
                             />
                         </div>
-                        {usage.count / usage.limit >= 0.8 && (
+                        {(usageData.transcriptionSeconds / 900) >= 0.8 && (
                             <p className="text-[10px] text-orange-600 dark:text-orange-400 font-medium mt-1">
                                 Loving it? Unlock unlimited →
                             </p>

@@ -107,7 +107,6 @@ const AppContent: React.FC = () => {
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
-          onUpgrade={() => { console.log("Upgrade clicked") }}
           onContact={() => setIsContactOpen(true)}
         />
         <ContactModal
