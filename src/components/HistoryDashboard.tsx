@@ -64,8 +64,8 @@ const HistoryDashboard: React.FC<HistoryDashboardProps> = ({ onEditEntry }) => {
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${entry.rating > 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                                entry.rating < 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                                    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                                            entry.rating < 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                                'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                                             }`}>
                                             Rating: {entry.rating}
                                         </span>
@@ -81,7 +81,7 @@ const HistoryDashboard: React.FC<HistoryDashboardProps> = ({ onEditEntry }) => {
                             </div>
 
                             <div className="mt-3 text-gray-600 dark:text-gray-300 line-clamp-2 text-sm">
-                                <div dangerouslySetInnerHTML={{ __html: entry.narrative || entry.reasoning || "No content" }} />
+                                {entry.narrative || entry.reasoning || "No content"}
                             </div>
                         </div>
                     ))

@@ -16,4 +16,6 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
-export const geminiApiKey = "AIzaSyBcGTlB3bK26F63bCVM-Gfz5rL0h_mgaN0";
+
+// Use environment variable for Gemini API key - never hardcode!
+export const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
