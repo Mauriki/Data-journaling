@@ -128,7 +128,7 @@ const AppContent: React.FC = () => {
         isMobile={isMobile}
         isTablet={isTablet}
         isPro={isPro}
-        usage={usage ? { count: usage.transcriptionSeconds, limit: 300 } : undefined}
+        usage={usage ? { count: usage.transcriptionSeconds, limit: 900 } : undefined}
       />
 
       {/* Main Content Area */}

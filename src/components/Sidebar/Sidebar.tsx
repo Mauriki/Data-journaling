@@ -1,9 +1,8 @@
 import React, { useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Book, History, Settings, LogOut } from 'lucide-react';
+import { Book, History, Settings, LogOut, Zap } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { useAuth } from '../../contexts/AuthContext';
-import UsageIndicator from './UsageIndicator';
 
 // --- Types ---
 type View = 'journal' | 'history';
@@ -70,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     isMobile,
     isTablet
 }) => {
-    const { logout } = useAuth();
+    const { logout, usage, isPro } = useAuth();
 
     // Handle view change wrapper
     const handleViewChange = useCallback((view: View) => {
@@ -100,10 +99,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                             {user?.displayName || 'Journaler'}
                         </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Free Plan</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Explorer Pass</p>
                     </div>
                 )}
             </div>
+
+            {/* Usage Progress Indicator */}
+            {!isPro && !collapsed && usage && (
+                <div
+                    onClick={handleSettings}
+                    className="mx-3 mb-2 p-3 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-xl cursor-pointer hover:shadow-md transition-shadow"
+                >
+                    <div className="flex items-center gap-2 mb-2">
+                        <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">Voice Journaling</span>
+                    </div>
+                    <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-600 dark:text-gray-400">
+                                {Math.floor(usage.count / 60)} of {Math.floor(usage.limit / 60)} min used
+                            </span>
+                            <span className="text-gray-500 dark:text-gray-400 font-medium">
+                                {Math.round((usage.count / usage.limit) * 100)}%
+                            </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-300 ${usage.count / usage.limit >= 0.8
+                                        ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                        : 'bg-gradient-to-r from-purple-500 to-blue-500'
+                                    }`}
+                                style={{ width: `${Math.min((usage.count / usage.limit) * 100, 100)}%` }}
+                            />
+                        </div>
+                        {usage.count / usage.limit >= 0.8 && (
+                            <p className="text-[10px] text-orange-600 dark:text-orange-400 font-medium mt-1">
+                                Loving it? Unlock unlimited →
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Navigation */}
             <div className="flex-1 px-3 space-y-1 overflow-y-auto no-scrollbar">
@@ -122,13 +158,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     collapsed={collapsed}
                 />
             </div>
-
-            {/* Usage Indicator (only in expanded view) */}
-            {!collapsed && (
-                <div className="px-3 mb-3">
-                    <UsageIndicator />
-                </div>
-            )}
 
             {/* Footer Actions */}
             <div className="p-3 mt-auto border-t border-black/5 dark:border-white/5 space-y-1">

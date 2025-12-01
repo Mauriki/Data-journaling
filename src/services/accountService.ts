@@ -56,3 +56,38 @@ export const deleteAccount = async (): Promise<void> => {
         throw new Error(`Failed to delete account: ${error.message}`);
     }
 };
+
+/**
+ * Get user usage stats
+ */
+export const getUserUsage = async (userId: string) => {
+    try {
+        const docRef = doc(db, "users", userId, "private", "usage");
+        const docSnap = await import("firebase/firestore").then(m => m.getDoc(docRef));
+
+        if (docSnap.exists()) {
+            return docSnap.data() as { transcriptionSeconds: number; aiSummaryCount: number };
+        }
+        return { transcriptionSeconds: 0, aiSummaryCount: 0 };
+    } catch (error) {
+        console.error("Error getting usage:", error);
+        return { transcriptionSeconds: 0, aiSummaryCount: 0 };
+    }
+};
+
+/**
+ * Update user usage stats
+ */
+export const updateUserUsage = async (userId: string, secondsDelta: number) => {
+    try {
+        const docRef = doc(db, "users", userId, "private", "usage");
+        const { setDoc, increment } = await import("firebase/firestore");
+
+        await setDoc(docRef, {
+            transcriptionSeconds: increment(secondsDelta),
+            lastUpdated: Date.now()
+        }, { merge: true });
+    } catch (error) {
+        console.error("Error updating usage:", error);
+    }
+};

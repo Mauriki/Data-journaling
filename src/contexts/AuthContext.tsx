@@ -16,6 +16,7 @@ interface AuthContextType {
   loginGuest: () => void;
   logout: () => Promise<void>;
   toggleDarkMode: () => void;
+  incrementUsage: (seconds: number) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [isPro] = useState(false);
-  const [usage] = useState({ transcriptionSeconds: 0, aiSummaryCount: 0 });
+  const [usage, setUsage] = useState({ transcriptionSeconds: 0, aiSummaryCount: 0 });
 
   // Handle Auth State Changes
   useEffect(() => {
@@ -37,10 +38,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Run migration: If user had local data (from guest mode), move it to cloud
         await migrateLocalToCloud(currentUser.uid);
+
+        // Load usage
+        import('../services/accountService').then(async (service) => {
+          const userUsage = await service.getUserUsage(currentUser.uid);
+          setUsage(userUsage);
+        });
+
       } else {
         setUser(null);
-        // Note: We don't force isGuest=true here, because we want the Login screen to appear
-        // unless the user manually clicked "Continue as Guest"
+        setUsage({ transcriptionSeconds: 0, aiSummaryCount: 0 });
       }
       setLoading(false);
     });
@@ -114,8 +121,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const incrementUsage = async (seconds: number) => {
+    if (user) {
+      setUsage(prev => ({ ...prev, transcriptionSeconds: prev.transcriptionSeconds + seconds }));
+      import('../services/accountService').then(service => {
+        service.updateUserUsage(user.uid, seconds);
+      });
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isGuest, loading, darkMode, isPro, usage, loginGoogle, loginEmail, registerEmail, loginGuest, logout, toggleDarkMode }}>
+    <AuthContext.Provider value={{ user, isGuest, loading, darkMode, isPro, usage, loginGoogle, loginEmail, registerEmail, loginGuest, logout, toggleDarkMode, incrementUsage }}>
       {children}
     </AuthContext.Provider>
   );

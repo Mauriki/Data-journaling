@@ -124,35 +124,34 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onUpgrad
 
           {/* Subscription Section */}
           <div className="space-y-3">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Subscription</label>
-            <div className="p-5 bg-gradient-to-br from-gray-50 via-zinc-50 to-slate-50 dark:from-zinc-900 dark:via-zinc-800 dark:to-slate-900 rounded-2xl border-2 border-gray-200 dark:border-zinc-700 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-gray-400/20 to-white/20 rounded-full blur-3xl" />
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Membership</label>
+            <div className="p-5 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-900/20 dark:via-blue-900/20 dark:to-indigo-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-700 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-full blur-3xl" />
               <div className="relative">
                 <div className="flex items-center gap-2 mb-3">
                   <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <h4 className="font-bold text-gray-900 dark:text-white">Ultimate Subscription</h4>
-                  <ProBadge size="sm" />
+                  <h4 className="font-bold text-gray-900 dark:text-white">Inner Circle</h4>
+                  <span className="text-[10px] px-2 py-0.5 bg-purple-600/10 text-purple-700 dark:text-purple-300 rounded-full font-semibold">Limited Access</span>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Ultimate Note Taking (Unlimited), Unlimited Voice Input, and Premium Support.
+                <p className="text-sm text-gray-700 dark:text-gray-200 mb-4 leading-relaxed">
+                  Join a select community unlocking unlimited voice journaling, deep AI insights, and exclusive early access to transformative features.
                 </p>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">$29.99</span>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">$9.99</span>
                   <span className="text-sm text-gray-500 dark:text-gray-400">/month</span>
                 </div>
-                <button
-                  onClick={() => {
-                    onUpgrade?.();
-                    onClose();
-                  }}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-gray-700 via-gray-800 to-black hover:from-gray-600 hover:via-gray-700 hover:to-gray-900 text-white font-bold shadow-lg shadow-gray-500/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                <a
+                  href={`mailto:${import.meta.env.VITE_UPGRADE_EMAIL || 'upgrade@yourjournal.app'}?subject=Inner Circle Membership Request&body=Hi, I'd like to upgrade to Inner Circle membership. My account email: ${user?.email || 'N/A'}`}
+                  onClick={onClose}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-500 hover:via-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 no-underline"
                 >
                   <Crown className="w-4 h-4" />
-                  Get Ultimate
-                </button>
+                  Claim Your Spot
+                </a>
               </div>
             </div>
           </div>
+
 
           {/* Data Management */}
           <div className="space-y-3">
@@ -183,7 +182,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onUpgrad
                 <Mail className="w-5 h-5 text-gray-900 dark:text-white" />
                 <div className="text-left">
                   <div className="font-medium text-apple-text dark:text-white">Contact Support</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Get help or send feedback</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Explorer Pass or send feedback</div>
                 </div>
               </div>
             </button>

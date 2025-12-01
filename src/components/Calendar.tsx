@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface CalendarProps {
     selectedDate: string;
@@ -11,28 +10,21 @@ interface CalendarProps {
 
 const Calendar: React.FC<CalendarProps> = ({ selectedDate, onSelectDate, entryDates, onClose }) => {
     const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate));
-    const [direction, setDirection] = useState(0);
 
-    const daysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-    const firstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    const daysInMonth = (date: Date) => {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    };
+
+    const firstDayOfMonth = (date: Date) => {
+        return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    };
 
     const handlePrevMonth = () => {
-        setDirection(-1);
         setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
     };
 
     const handleNextMonth = () => {
-        setDirection(1);
         setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-    };
-
-    const handleDateClick = (day: number) => {
-        const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-        // Adjust for timezone offset to ensure correct YYYY-MM-DD string
-        const offset = newDate.getTimezoneOffset();
-        const adjustedDate = new Date(newDate.getTime() - (offset * 60 * 1000));
-        onSelectDate(adjustedDate.toISOString().split('T')[0]);
-        onClose();
     };
 
     const renderDays = () => {
@@ -47,86 +39,66 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onSelectDate, entryDa
 
         // Days of the month
         for (let i = 1; i <= totalDays; i++) {
-            const dateStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i).toLocaleDateString('en-CA'); // YYYY-MM-DD
-            const isSelected = dateStr === selectedDate;
-            const hasEntry = entryDates.includes(dateStr);
-            const isToday = dateStr === new Date().toLocaleDateString('en-CA');
+            const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
+            const dateString = date.toISOString().split('T')[0];
+            const isSelected = dateString === selectedDate;
+            const hasEntry = entryDates.includes(dateString);
+            const isToday = new Date().toDateString() === date.toDateString();
 
             days.push(
                 <button
                     key={i}
-                    onClick={() => handleDateClick(i)}
+                    onClick={() => onSelectDate(dateString)}
                     className={`
-            relative h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200
-            ${isSelected ? 'bg-black text-white dark:bg-white dark:text-black shadow-lg scale-105' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10'}
-            ${isToday && !isSelected ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}
+            h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-all relative
+            ${isSelected
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300'
+                        }
+            ${isToday && !isSelected ? 'border border-blue-500 text-blue-500' : ''}
           `}
                 >
                     {i}
                     {hasEntry && !isSelected && (
-                        <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500" />
-                    )}
-                    {hasEntry && isSelected && (
-                        <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-white/50 dark:bg-black/50" />
+                        <div className="absolute bottom-1 w-1 h-1 bg-green-500 rounded-full" />
                     )}
                 </button>
             );
         }
+
         return days;
     };
 
-    const variants = {
-        enter: (direction: number) => ({
-            x: direction > 0 ? 20 : -20,
-            opacity: 0
-        }),
-        center: {
-            x: 0,
-            opacity: 1
-        },
-        exit: (direction: number) => ({
-            x: direction > 0 ? -20 : 20,
-            opacity: 0
-        })
-    };
-
     return (
-        <div className="p-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-white/10 w-[280px] sm:w-[300px] animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between mb-6 px-2">
-                <button onClick={handlePrevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
-                    <ChevronLeft className="w-5 h-5 text-gray-500" />
+        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-gray-200 dark:border-zinc-700 p-4 w-[320px] animate-fade-in">
+            <div className="flex items-center justify-between mb-4">
+                <button onClick={handlePrevMonth} className="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full">
+                    <ChevronLeft size={20} className="text-gray-600 dark:text-gray-400" />
                 </button>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                     {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                </h3>
-                <button onClick={handleNextMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
-                    <ChevronRight className="w-5 h-5 text-gray-500" />
+                </h2>
+                <button onClick={handleNextMonth} className="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full">
+                    <ChevronRight size={20} className="text-gray-600 dark:text-gray-400" />
                 </button>
             </div>
 
-            <div className="grid grid-cols-7 mb-2 text-center">
+            <div className="grid grid-cols-7 gap-1 mb-2">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-                    <div key={day} className="text-xs font-bold text-gray-400 uppercase tracking-wider h-10 flex items-center justify-center">
+                    <div key={day} className="h-8 w-10 flex items-center justify-center text-xs font-medium text-gray-400">
                         {day}
                     </div>
                 ))}
             </div>
 
-            <div className="relative h-[280px] overflow-hidden">
-                <AnimatePresence initial={false} custom={direction} mode="wait">
-                    <motion.div
-                        key={currentMonth.toISOString()}
-                        custom={direction}
-                        variants={variants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="grid grid-cols-7 place-items-center absolute w-full"
-                    >
-                        {renderDays()}
-                    </motion.div>
-                </AnimatePresence>
+            <div className="grid grid-cols-7 gap-1">
+                {renderDays()}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-gray-100 dark:border-zinc-700 flex justify-end">
+                <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    Close
+                </button>
             </div>
         </div>
     );
