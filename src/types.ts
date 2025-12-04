@@ -9,7 +9,7 @@ export interface JournalEntry {
   narrative: string;
 
   // Section 2: Analysis
-  rating: RatingValue;
+  rating: RatingValue | null;
   reasoning: string; // HTML string
 
   // Section 3: Plan

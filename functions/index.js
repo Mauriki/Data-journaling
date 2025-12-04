@@ -23,7 +23,7 @@ exports.transcribeAudio = onRequest(
         }
 
         try {
-            const { audioData } = req.body;
+            const { audioData, section } = req.body;
 
             if (!audioData) {
                 return res.status(400).json({ error: "No audio data provided" });
@@ -43,61 +43,88 @@ exports.transcribeAudio = onRequest(
 
             const rawText = transcription.text || "";
 
-            // Step 2: Format with GPT for natural, readable structure
-            // Step 2: Format with GPT using the advanced system prompt
-            const systemPrompt = `You are a senior editor + structured content processor for voice-to-text transcripts. Your job is to transform raw ASR output (the transcript) into a highly readable, structured journal entry and machine-friendly JSON segments — while strictly following the "no new words" policy.
+            // If empty or just noise, return empty
+            if (!rawText.trim() || rawText.trim().length < 3) {
+                return res.json({ text: "" });
+            }
 
-PRINCIPLES / HARD RULES:
-1. **NO NEW WORDS**: Do not introduce new semantic content. Only fix punctuation/spacing, remove fillers sparingly, and reflow sentences.
-2. **SEGMENTATION**: Split segments by natural pauses.
-3. **TOPIC DETECTION**: Detect topic changes and use headers like "### Topic: [Name]".
-4. **BULLETS**: Convert enumerations to bullets.
-5. **EMPHASIS**: Bold short phrases explicitly emphasized.
-6. **OUTPUT FORMAT**: Return a JSON object with keys:
-   {
-    "polished_markdown": "...",
-    "summary_bullets": ["...", "..."],
-    "segments_json": [...],
-    "warnings": [...]
-   }
+            // Step 2: Format with GPT based on section type
+            const sectionType = section || "narrative"; // Default to narrative
 
-PROCESS:
-1. Parse transcript.
-2. Remove fillers sparingly.
-3. Produce polished_markdown, summary_bullets, and segments_json.
-4. Respect NO NEW WORDS.
+            let systemPrompt = "";
 
-Input Transcript:
-${rawText}`;
+            if (sectionType === "narrative") {
+                systemPrompt = `You are a voice-to-text formatter for a personal journal NARRATIVE section.
+
+RULES (VERY STRICT):
+1. **NO NEW WORDS**: Never add content the user didn't say. Zero tolerance.
+2. **PRESERVE MEANING**: Keep the user's exact phrasing and tone.
+3. **PARAGRAPH BREAKS**: Add a blank line ONLY when there's a clear shift in:
+   - Time (morning → afternoon)
+   - Location/place
+   - Topic/subject
+   - Activity
+4. **NO HEADINGS**: Never use # or ## headers.
+5. **MINIMAL MARKDOWN**: 
+   - Use • bullets ONLY if user explicitly lists things
+   - Use **bold** ONLY for explicit emphasis
+   - No fancy formatting
+6. **NATURAL FLOW**: Write as flowing paragraphs, not fragmented sentences.
+7. **REMOVE FILLER**: Remove "um", "uh", "like" etc, but nothing else.
+
+INPUT: "${rawText}"
+
+OUTPUT: Return ONLY the formatted text. Nothing else.`;
+            } else if (sectionType === "analysis") {
+                systemPrompt = `You are a voice-to-text formatter for a journal MOOD/ANALYSIS section.
+
+RULES (VERY STRICT):
+1. **NO NEW WORDS**: Never add content the user didn't say.
+2. **PARAGRAPH BREAKS**: Separate different emotional observations.
+3. **NO HEADINGS**: Never use headers.
+4. **BULLETS**: Use • bullets when user describes multiple feelings or reasons.
+5. **NATURAL REFLECTION**: Keep the introspective, emotional tone.
+6. **REMOVE FILLER**: Remove "um", "uh", etc.
+
+INPUT: "${rawText}"
+
+OUTPUT: Return ONLY the formatted text. Nothing else.`;
+            } else if (sectionType === "strategy") {
+                systemPrompt = `You are a voice-to-text formatter for a journal STRATEGY/PLANNING section.
+
+RULES (VERY STRICT):
+1. **NO NEW WORDS**: Never add content the user didn't say.
+2. **CHECKBOXES**: Convert tasks/plans/todos into checkboxes:
+   - Use "- [ ] " for each action item or task
+   - Keep non-task content as regular paragraphs
+3. **NO HEADINGS**: Never use headers.
+4. **ACTION-ORIENTED**: This section is about future plans/actions.
+5. **REMOVE FILLER**: Remove "um", "uh", etc.
+
+Examples of checkboxes:
+"I need to call mom" → - [ ] Call mom
+"Tomorrow I want to exercise" → - [ ] Exercise tomorrow
+"I should probably check my emails" → - [ ] Check emails
+
+INPUT: "${rawText}"
+
+OUTPUT: Return ONLY the formatted text. Nothing else.`;
+            } else {
+                // Generic formatting
+                systemPrompt = `Format this voice transcript cleanly. Remove filler words. Add paragraph breaks between different topics. Do NOT add any new content or headings. Only output the formatted text.
+
+INPUT: "${rawText}"`;
+            }
 
             const formatted = await openai.chat.completions.create({
                 model: "gpt-4o-mini",
                 messages: [
-                    { role: "system", content: "You are a helpful assistant that outputs JSON." },
                     { role: "user", content: systemPrompt }
                 ],
-                temperature: 0.3,
-                response_format: { type: "json_object" },
+                temperature: 0.2,
             });
 
-            const content = formatted.choices[0]?.message?.content;
-            let finalText = rawText;
-
-            try {
-                const parsed = JSON.parse(content);
-                // We primarily want the polished markdown for the editor
-                finalText = parsed.polished_markdown || rawText;
-
-                // Optionally, we could append summary bullets if they exist and are useful
-                if (parsed.summary_bullets && parsed.summary_bullets.length > 0) {
-                    // For now, let's just return the polished markdown to match frontend expectation
-                    // But we could append them like:
-                    // finalText += "\n\n### Summary\n" + parsed.summary_bullets.map(b => "- " + b).join("\n");
-                }
-            } catch (e) {
-                console.error("Failed to parse GPT JSON response:", e);
-                finalText = content || rawText; // Fallback
-            }
+            const finalText = formatted.choices[0]?.message?.content?.trim() || rawText;
 
             res.json({ text: finalText });
         } catch (error) {

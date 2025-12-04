@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider } from '../firebase';
-import { signInWithPopup, signOut, onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { migrateLocalToCloud } from '../services/storageService';
 
 interface AuthContextType {
@@ -28,6 +28,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [darkMode, setDarkMode] = useState(false);
   const [isPro] = useState(false);
   const [usage, setUsage] = useState({ transcriptionSeconds: 0, aiSummaryCount: 0 });
+
+  // Handle redirect result (for signInWithRedirect)
+  useEffect(() => {
+    getRedirectResult(auth).then((result) => {
+      if (result?.user) {
+        console.log('Redirect sign-in successful');
+      }
+    }).catch((error) => {
+      console.error('Redirect sign-in error:', error.code, error.message);
+    });
+  }, []);
 
   // Handle Auth State Changes
   useEffect(() => {
@@ -80,8 +91,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginGoogle = async () => {
     try {
       setLoading(true);
+      console.log('Attempting Google sign-in with popup...');
       await signInWithPopup(auth, googleProvider);
+      console.log('Sign-in successful');
     } catch (error: any) {
+      console.error('Google sign-in error:', error.code, error.message);
+
+      // If popup was blocked or failed, try redirect method
+      if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+        console.log('Popup failed, trying redirect...');
+        await signInWithRedirect(auth, googleProvider);
+        return; // Page will redirect, don't throw
+      }
+
       setLoading(false);
       throw error;
     }

@@ -15,6 +15,7 @@ interface SidebarProps {
     user: User | null;
     streak: number;
     onOpenSettings: () => void;
+    onOpenProfile?: () => void;
     isMobile: boolean;
     isTablet: boolean; // New prop for tablet mode
     isPro?: boolean;
@@ -66,6 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onViewChange,
     user,
     onOpenSettings,
+    onOpenProfile,
     isMobile,
     isTablet
 }) => {
@@ -85,11 +87,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (isMobile) onToggle();
     }, [onOpenSettings, isMobile, onToggle]);
 
+    const handleProfileClick = useCallback(() => {
+        if (onOpenProfile) {
+            onOpenProfile();
+            if (isMobile) onToggle();
+        }
+    }, [onOpenProfile, isMobile, onToggle]);
+
     // --- Render Content ---
     const SidebarContent = ({ collapsed = false }: { collapsed?: boolean }) => (
         <div className="flex flex-col h-full bg-apple-bg/95 dark:bg-[#1c1c1e]/95 backdrop-blur-xl border-r border-black/5 dark:border-white/5">
             {/* Header / User Profile */}
-            <div className={`flex items-center ${collapsed ? 'justify-center p-4' : 'px-4 py-5 gap-3'} mb-2`}>
+            <div
+                className={`flex items-center ${collapsed ? 'justify-center p-4' : 'px-4 py-5 gap-3'} mb-2 ${onOpenProfile ? 'cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors' : ''}`}
+                onClick={handleProfileClick}
+                title={collapsed ? 'Edit Profile' : undefined}
+            >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
                     {user?.photoURL ? (
                         <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
@@ -111,10 +124,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!isPro && !collapsed && usageData && (
                 <div
                     onClick={handleSettings}
-                    className="mx-3 mb-2 p-3 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-xl cursor-pointer hover:shadow-md transition-shadow"
+                    className="mx-3 mb-2 p-3 bg-gradient-to-br from-accent-cream to-accent-sand dark:from-accent-wood/20 dark:to-accent-leather/20 border border-accent-sand dark:border-accent-wood rounded-xl cursor-pointer hover:shadow-md transition-shadow"
                 >
                     <div className="flex items-center gap-2 mb-2">
-                        <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <Zap className="w-4 h-4 text-accent-leather dark:text-accent-warm" />
                         <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">Voice Journaling</span>
                     </div>
                     <div className="space-y-1.5">
@@ -130,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <div
                                 className={`h-full rounded-full transition-all duration-300 ${(usageData.transcriptionSeconds / 900) >= 0.8
                                     ? 'bg-gradient-to-r from-orange-500 to-red-500'
-                                    : 'bg-gradient-to-r from-purple-500 to-blue-500'
+                                    : 'bg-gradient-to-r from-accent-leather to-accent-wood'
                                     }`}
                                 style={{ width: `${Math.min((usageData.transcriptionSeconds / 900) * 100, 100)}%` }}
                             />

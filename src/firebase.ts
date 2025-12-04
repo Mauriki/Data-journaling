@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 export const firebaseConfig = {
@@ -14,6 +14,10 @@ export const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+// Enable persistent login - user stays logged in even after closing browser
+setPersistence(auth, browserLocalPersistence);
+
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 

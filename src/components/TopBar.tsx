@@ -65,10 +65,21 @@ const TopBar: React.FC<TopBarProps> = ({
                             onClick={handleCalendarToggle}
                             className="group flex items-center gap-1.5 md:gap-2 text-left hover:opacity-80 transition-opacity min-w-0"
                         >
-                            <h1 className="text-lg md:text-[length:var(--font-xl)] font-bold text-apple-text dark:text-white tracking-tight leading-none truncate">
-                                {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                            <h1 className="text-xl md:text-[length:var(--font-xl)] font-bold text-apple-text dark:text-white tracking-tight leading-none truncate">
+                                {/* Mobile (< 400px): Short format (Mon, Dec 4) - Larger text */}
+                                <span className="sm:hidden">
+                                    {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                </span>
+                                {/* Mobile/Tablet (400px - 768px): Full weekday if space allows */}
+                                <span className="hidden sm:inline md:hidden">
+                                    {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                                </span>
+                                {/* Desktop: Full format (Monday, December 4) */}
+                                <span className="hidden md:inline">
+                                    {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                </span>
                             </h1>
-                            <ChevronDown className={`w-4 h-4 md:w-6 md:h-6 text-gray-400 transition-transform duration-300 flex-shrink-0 ${showCalendar ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-5 h-5 md:w-6 md:h-6 text-gray-400 transition-transform duration-300 flex-shrink-0 ${showCalendar ? 'rotate-180' : ''}`} />
                         </button>
                     </div>
 

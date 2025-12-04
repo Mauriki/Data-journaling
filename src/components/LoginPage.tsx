@@ -32,7 +32,12 @@ const LoginPage: React.FC = () => {
         err?.message?.includes('unauthorized-domain') ||
         String(err).includes('auth/unauthorized-domain');
 
-      if (isUnauthorized) {
+      const isBlockedReferer =
+        err?.code?.includes('requests-from-referer') ||
+        err?.message?.includes('requests-from-referer') ||
+        String(err).includes('are-blocked');
+
+      if (isUnauthorized || isBlockedReferer) {
         setUnauthorizedDomain(window.location.hostname);
         return;
       }
@@ -86,8 +91,8 @@ const LoginPage: React.FC = () => {
 
         {/* Logo Area */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-[2rem] bg-white dark:bg-zinc-800 shadow-float mb-8 animate-zoom-in">
-            <Feather className="w-12 h-12 text-apple-text dark:text-white" />
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-[2rem] bg-gradient-to-br from-accent-leather to-accent-wood shadow-warm mb-8 animate-zoom-in hover:animate-wiggle transition-all cursor-pointer">
+            <Feather className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-4xl font-bold tracking-tight mb-3 animate-slide-in-from-bottom" style={{ animationDelay: '0.1s' }}>Data Journaling</h1>
           <p className="text-apple-gray dark:text-zinc-400 text-lg animate-slide-in-from-bottom" style={{ animationDelay: '0.2s' }}>
@@ -135,7 +140,7 @@ const LoginPage: React.FC = () => {
               <button
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-apple-text dark:bg-white text-white dark:text-black font-semibold py-4 rounded-2xl transition-transform active:scale-[0.98] hover:shadow-lg disabled:opacity-70"
+                className="w-full flex items-center justify-center gap-3 bg-accent-leather hover:bg-accent-wood text-white font-semibold py-4 rounded-2xl transition-all active:scale-[0.98] hover:shadow-warm hover:-translate-y-0.5 disabled:opacity-70"
               >
                 {loading ? "Connecting..." : (
                   <>
@@ -160,7 +165,7 @@ const LoginPage: React.FC = () => {
 
               <button
                 onClick={loginGuest}
-                className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-zinc-700/50 text-apple-text dark:text-white font-medium py-4 rounded-2xl hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors group"
+                className="w-full flex items-center justify-center gap-2 bg-accent-sand dark:bg-zinc-700/50 text-accent-wood dark:text-white font-medium py-4 rounded-2xl hover:bg-accent-cream dark:hover:bg-zinc-600 transition-all hover:-translate-y-0.5 group"
               >
                 <span>Continue as Guest</span>
                 <ArrowRight className="w-4 h-4 opacity-50 group-hover:translate-x-1 transition-transform" />

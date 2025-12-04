@@ -10,6 +10,7 @@ import { Sidebar } from './components/Sidebar/Sidebar';
 const HistoryDashboard = React.lazy(() => import('./components/HistoryDashboard'));
 const SettingsModal = React.lazy(() => import('./components/SettingsModal'));
 const ContactModal = React.lazy(() => import('./components/ContactModal'));
+const ProfileModal = React.lazy(() => import('./components/ProfileModal'));
 
 type View = 'journal' | 'history';
 
@@ -22,6 +23,7 @@ const AppContent: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Responsive State
   const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
@@ -113,6 +115,10 @@ const AppContent: React.FC = () => {
           isOpen={isContactOpen}
           onClose={() => setIsContactOpen(false)}
         />
+        <ProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+        />
       </Suspense>
 
       {/* Sidebar Navigation */}
@@ -124,6 +130,7 @@ const AppContent: React.FC = () => {
         user={user}
         streak={streak}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
         isMobile={isMobile}
         isTablet={isTablet}
         isPro={isPro}
@@ -154,6 +161,8 @@ const AppContent: React.FC = () => {
               <Suspense fallback={<div className="p-10 text-center text-gray-400">Loading Index...</div>}>
                 <HistoryDashboard
                   onEditEntry={handleEditEntry}
+                  onToggleSidebar={isMobile || isTablet ? () => setIsSidebarOpen(!isSidebarOpen) : undefined}
+                  isSidebarOpen={isSidebarOpen}
                 />
               </Suspense>
             )}

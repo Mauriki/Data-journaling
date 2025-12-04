@@ -66,17 +66,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onContac
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-zinc-700 animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-10 md:pt-4 md:items-center bg-black/20 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 dark:border-zinc-700 animate-in zoom-in-95 duration-200 my-auto">
 
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-zinc-700">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-zinc-700 sticky top-0 bg-white dark:bg-zinc-800 z-10 rounded-t-2xl">
           <h3 className="font-bold text-lg text-apple-text dark:text-white">Settings</h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full transition-colors">
             <X className="w-5 h-5 text-gray-500 dark:text-gray-300" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
 
           {/* Account Section */}
           <div className="space-y-3">
@@ -104,25 +104,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onContac
           {/* Subscription Section */}
           <div className="space-y-3">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Membership</label>
-            <div className="p-5 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-900/20 dark:via-blue-900/20 dark:to-indigo-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-700 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-full blur-3xl" />
+            <div className="p-5 bg-gradient-to-br from-accent-cream via-accent-sand to-orange-50 dark:from-accent-wood/20 dark:via-accent-leather/20 dark:to-orange-900/20 rounded-2xl border-2 border-accent-sand dark:border-accent-wood relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent-leather/20 to-accent-wood/20 rounded-full blur-3xl" />
               <div className="relative">
                 <div className="flex items-center gap-2 mb-3">
-                  <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <Crown className="w-5 h-5 text-accent-leather dark:text-accent-warm" />
                   <h4 className="font-bold text-gray-900 dark:text-white">Inner Circle</h4>
-                  <span className="text-[10px] px-2 py-0.5 bg-purple-600/10 text-purple-700 dark:text-purple-300 rounded-full font-semibold">Limited Access</span>
+                  <span className="text-[10px] px-2 py-0.5 bg-accent-leather/10 text-accent-wood dark:text-accent-warm rounded-full font-semibold">Limited Access</span>
                 </div>
                 <p className="text-sm text-gray-700 dark:text-gray-200 mb-4 leading-relaxed">
                   Join a select community unlocking unlimited voice journaling, deep AI insights, and exclusive early access to transformative features.
                 </p>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">$9.99</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">/month</span>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-accent-leather to-accent-wood bg-clip-text text-transparent">$9.99</span>
+                  <span className="text-sm text-stone-500 dark:text-gray-400">/month</span>
                 </div>
                 <a
                   href={`mailto:${import.meta.env.VITE_UPGRADE_EMAIL || 'upgrade@yourjournal.app'}?subject=Inner Circle Membership Request&body=Hi, I'd like to upgrade to Inner Circle membership. My account email: ${user?.email || 'N/A'}`}
                   onClick={onClose}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-500 hover:via-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 no-underline"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-leather to-accent-wood hover:from-accent-wood hover:to-accent-warm text-white font-bold shadow-lg shadow-accent-leather/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 no-underline"
                 >
                   <Crown className="w-4 h-4" />
                   Claim Your Spot

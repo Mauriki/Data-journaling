@@ -41,20 +41,30 @@
           },
           colors: {
             apple: {
-              bg: '#F5F5F7', // Slightly warmer/lighter gray
+              bg: '#FAFAF9', // Warm off-white
               card: '#FFFFFF',
-              gray: '#86868b',
+              gray: '#78716c', // Warm gray (stone)
               blue: '#0071e3',
               blueHover: '#0077ED',
-              text: '#1d1d1f',
-              border: '#d2d2d7',
+              text: '#1c1917', // Warm black (stone-900)
+              border: '#e7e5e4', // Warm border (stone-200)
+            },
+            // Warm leather/wood accent palette
+            accent: {
+              leather: '#A0522D', // Sienna - rich leather
+              wood: '#8B4513',    // Saddle brown - wood tone
+              warm: '#D2691E',    // Chocolate - warm accent
+              cream: '#FFF8F0',   // Cream background
+              sand: '#F5E6D3',    // Sand - subtle warm bg
             }
           },
           boxShadow: {
             'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-            'apple': '0 10px 30px -10px rgba(0,0,0,0.05)', // Softer, more diffuse
-            'float': '0 20px 40px -10px rgba(0,0,0,0.1)', // Deeper float
+            'apple': '0 10px 30px -10px rgba(0,0,0,0.05)',
+            'float': '0 20px 40px -10px rgba(0,0,0,0.1)',
             'inner-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
+            'warm': '0 4px 20px -4px rgba(160, 82, 45, 0.15)', // Leather-tinted shadow
+            'card-hover': '0 8px 30px -8px rgba(0,0,0,0.12)',
           },
           fontFamily: {
             sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
@@ -67,6 +77,9 @@
             'slide-in-from-right': 'slideInFromRight 0.5s ease-out forwards',
             'slide-in-from-bottom': 'slideInFromBottom 0.5s ease-out forwards',
             'zoom-in': 'zoomIn 0.3s ease-out forwards',
+            'bounce-subtle': 'bounceSubtle 0.6s ease-out',
+            'wiggle': 'wiggle 0.5s ease-in-out',
+            'pop': 'pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
           },
           keyframes: {
             fadeIn: {
@@ -84,6 +97,19 @@
             zoomIn: {
               '0%': { opacity: '0', transform: 'scale(0.95)' },
               '100%': { opacity: '1', transform: 'scale(1)' },
+            },
+            bounceSubtle: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-8px)' },
+            },
+            wiggle: {
+              '0%, 100%': { transform: 'rotate(-3deg)' },
+              '50%': { transform: 'rotate(3deg)' },
+            },
+            pop: {
+              '0%': { transform: 'scale(0.9)' },
+              '50%': { transform: 'scale(1.1)' },
+              '100%': { transform: 'scale(1)' },
             }
           }
         }
@@ -170,20 +196,7 @@
       font-style: italic;
     }
   </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
-    "vite": "https://aistudiocdn.com/vite@^7.2.4",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
-  }
-}
-</script>
+
 </head>
 
 <body

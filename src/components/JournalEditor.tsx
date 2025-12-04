@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { JournalEntry, RatingValue } from '../types';
-import { saveEntry, getEntryByDate } from '../services/storageService';
+import { saveEntry, getEntryByDate, deleteEntry } from '../services/storageService';
 
 import { useAuth } from '../contexts/AuthContext';
 import RatingInput from './RatingInput';
@@ -94,7 +94,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             date,
             timestamp: Date.now(),
             narrative,
-            rating: rating || 0,
+            rating: rating, // Allow null
             reasoning,
             planForTomorrow: plan,
             tags,
@@ -118,7 +118,15 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
     useEffect(() => {
         if (loading) return;
         const timer = setTimeout(() => {
-            if (narrative || reasoning || plan || rating !== null || tags.length > 0) {
+            // Check if entry is effectively empty
+            const isEmpty = !narrative && !reasoning && !plan && rating === null && tags.length === 0;
+
+            if (isEmpty) {
+                // If empty, delete the entry to avoid clutter
+                deleteEntry(date).then(() => {
+                    setSaveStatus('saved');
+                });
+            } else {
                 saveData();
             }
         }, 1500);
@@ -188,21 +196,21 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
             />
 
             {/* Editor Sections Container */}
-            <div className="mx-auto max-w-[var(--card-max-width)] px-0 md:px-[var(--space-l)] space-y-4 md:space-y-[var(--space-xl)] mt-8 md:mt-12">
+            <div className="mx-auto max-w-[var(--card-max-width)] px-0 md:px-[var(--space-l)] space-y-3 md:space-y-[var(--space-l)] mt-6 md:mt-10">
 
                 <section className="group animate-slide-in-from-bottom @container" style={{ animationDelay: '0.2s' }}>
                     <div className="flex items-center justify-between mb-[var(--space-s)]">
                         <div className="flex items-center gap-2">
-                            <span className="text-[0.85rem] tracking-[2px] uppercase text-apple-gray dark:text-white/20 font-medium">NARRATIVE</span>
-                            <span className="text-sm text-apple-gray/60 dark:text-white/10">•</span>
-                            <span className="text-sm text-apple-gray dark:text-gray-400">What happened today?</span>
+                            <span className="text-[0.85rem] tracking-[2px] uppercase text-accent-leather dark:text-accent-warm font-semibold">NARRATIVE</span>
+                            <span className="text-sm text-stone-300 dark:text-white/10">•</span>
+                            <span className="text-sm text-stone-500 dark:text-gray-400">What happened today?</span>
                         </div>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity mb-1">
-                            <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'journal')} />
+                        <div className="flex items-center gap-2">
+                            <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'journal')} section="narrative" />
                         </div>
                     </div>
 
-                    <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-3 md:p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+                    <div className="bg-white dark:bg-white/[0.02] rounded-2xl p-4 md:p-[var(--space-m)] border border-stone-200/80 dark:border-white/5 shadow-apple backdrop-blur-sm transition-all hover:shadow-card-hover hover:border-accent-leather/20">
                         <RichTextEditor
                             value={narrative}
                             onChange={handleNarrativeChange}
@@ -214,14 +222,14 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
                 <section className="group animate-slide-in-from-bottom @container" style={{ animationDelay: '0.3s' }}>
                     <div className="flex items-center justify-between mb-[var(--space-s)]">
                         <div className="flex items-center gap-2">
-                            <span className="text-[0.85rem] tracking-[2px] uppercase text-apple-gray dark:text-white/20 font-medium">ANALYSIS & MOOD</span>
+                            <span className="text-[0.85rem] tracking-[2px] uppercase text-accent-leather dark:text-accent-warm font-semibold">ANALYSIS & MOOD</span>
                         </div>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'analysis')} />
+                        <div>
+                            <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'analysis')} section="analysis" />
                         </div>
                     </div>
 
-                    <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-3 md:p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+                    <div className="bg-white dark:bg-white/[0.02] rounded-2xl p-4 md:p-[var(--space-m)] border border-stone-200/80 dark:border-white/5 shadow-apple backdrop-blur-sm transition-all hover:shadow-card-hover hover:border-accent-leather/20">
                         {/* Rating - First in Analysis */}
                         <div className="mb-[var(--space-m)]">
                             <RatingInput value={rating} onChange={handleRatingChange} />
@@ -231,7 +239,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
                             {/* Why do you feel this way? */}
                             <div>
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm text-apple-gray dark:text-gray-400">Why do you feel this way?</span>
+                                    <span className="text-sm text-stone-500 dark:text-gray-400">Why do you feel this way?</span>
                                 </div>
                                 <RichTextEditor
                                     value={reasoning}
@@ -246,16 +254,16 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialDate, onSave, onTo
                 <section className="group animate-slide-in-from-bottom @container" style={{ animationDelay: '0.4s' }}>
                     <div className="flex items-center justify-between mb-[var(--space-s)]">
                         <div className="flex items-center gap-2">
-                            <span className="text-[0.85rem] tracking-[2px] uppercase text-apple-gray dark:text-white/20 font-medium">STRATEGY</span>
-                            <span className="text-sm text-apple-gray/60 dark:text-white/10">•</span>
-                            <span className="text-sm text-apple-gray dark:text-gray-400">Plan for tomorrow</span>
+                            <span className="text-[0.85rem] tracking-[2px] uppercase text-accent-leather dark:text-accent-warm font-semibold">STRATEGY</span>
+                            <span className="text-sm text-stone-300 dark:text-white/10">•</span>
+                            <span className="text-sm text-stone-500 dark:text-gray-400">Plan for tomorrow</span>
                         </div>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'strategy')} />
+                        <div>
+                            <AudioRecorder onTranscriptionComplete={(text) => handleTranscription(text, 'strategy')} section="strategy" />
                         </div>
                     </div>
 
-                    <div className="bg-white/50 dark:bg-white/[0.02] rounded-xl p-3 md:p-[var(--space-m)] border border-apple-border/50 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.04]">
+                    <div className="bg-white dark:bg-white/[0.02] rounded-2xl p-4 md:p-[var(--space-m)] border border-stone-200/80 dark:border-white/5 shadow-apple backdrop-blur-sm transition-all hover:shadow-card-hover hover:border-accent-leather/20">
                         <RichTextEditor
                             value={plan}
                             onChange={handlePlanChange}

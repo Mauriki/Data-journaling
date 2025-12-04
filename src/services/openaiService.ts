@@ -10,7 +10,7 @@ const LOCAL_URL = "http://127.0.0.1:5001/data-journaling/us-central1";
 
 const getBaseUrl = () => USE_LOCAL ? LOCAL_URL : FUNCTIONS_BASE_URL;
 
-export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
+export const transcribeAudio = async (audioBlob: Blob, section: 'narrative' | 'analysis' | 'strategy' = 'narrative'): Promise<string> => {
     try {
         // Convert blob to base64
         const arrayBuffer = await audioBlob.arrayBuffer();
@@ -26,7 +26,7 @@ export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ audioData: base64 }),
+            body: JSON.stringify({ audioData: base64, section }),
         });
 
         if (!response.ok) {
