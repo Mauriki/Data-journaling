@@ -1,14 +1,14 @@
 import { JournalEntry } from "../types";
 
-// Cloud Functions URLs (will be set after deployment)
-const FUNCTIONS_BASE_URL = import.meta.env.VITE_FUNCTIONS_URL ||
-    "https://us-central1-data-journaling.cloudfunctions.net";
+// Gen2 Cloud Functions use Cloud Run URLs
+// Format: https://FUNCTION_NAME-HASH-REGION.a.run.app
+const TRANSCRIBE_URL = "https://transcribeaudio-qdluweamxa-uc.a.run.app";
+const INSIGHT_URL = "https://generateinsight-qdluweamxa-uc.a.run.app";
+const WEEKLY_URL = "https://generateweeklyreview-qdluweamxa-uc.a.run.app";
 
 // Fallback to local development if needed
 const USE_LOCAL = import.meta.env.VITE_USE_LOCAL_FUNCTIONS === 'true';
 const LOCAL_URL = "http://127.0.0.1:5001/data-journaling/us-central1";
-
-const getBaseUrl = () => USE_LOCAL ? LOCAL_URL : FUNCTIONS_BASE_URL;
 
 export const transcribeAudio = async (audioBlob: Blob, section: 'narrative' | 'analysis' | 'strategy' = 'narrative'): Promise<string> => {
     try {
@@ -21,7 +21,11 @@ export const transcribeAudio = async (audioBlob: Blob, section: 'narrative' | 'a
             )
         );
 
-        const response = await fetch(`${getBaseUrl()}/transcribeAudio`, {
+        const url = USE_LOCAL ? `${LOCAL_URL}/transcribeAudio` : TRANSCRIBE_URL;
+
+        console.log("Transcribing to:", url);
+
+        const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -44,7 +48,9 @@ export const transcribeAudio = async (audioBlob: Blob, section: 'narrative' | 'a
 
 export const generateInsight = async (entry: JournalEntry): Promise<string> => {
     try {
-        const response = await fetch(`${getBaseUrl()}/generateInsight`, {
+        const url = USE_LOCAL ? `${LOCAL_URL}/generateInsight` : INSIGHT_URL;
+
+        const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -71,7 +77,9 @@ export const generateInsight = async (entry: JournalEntry): Promise<string> => {
 
 export const generateWeeklyReview = async (entries: JournalEntry[]): Promise<string> => {
     try {
-        const response = await fetch(`${getBaseUrl()}/generateWeeklyReview`, {
+        const url = USE_LOCAL ? `${LOCAL_URL}/generateWeeklyReview` : WEEKLY_URL;
+
+        const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
