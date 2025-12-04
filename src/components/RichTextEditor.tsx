@@ -9,182 +9,49 @@ interface RichTextEditorProps {
     className?: string;
 }
 
+// Parse value into lines with checkbox metadata
+interface ParsedLine {
+    type: 'checkbox' | 'checked' | 'bullet' | 'text';
+    content: string;
+    raw: string;
+}
+
+const parseLine = (line: string): ParsedLine => {
+    if (line.startsWith('- [ ] ')) return { type: 'checkbox', content: line.substring(6), raw: line };
+    if (line.startsWith('- [x] ')) return { type: 'checked', content: line.substring(6), raw: line };
+    if (line.startsWith('• ')) return { type: 'bullet', content: line.substring(2), raw: line };
+    return { type: 'text', content: line, raw: line };
+};
+
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
     value,
     onChange,
     animatedPlaceholder,
     className = ''
 }) => {
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [isFocused, setIsFocused] = useState(false);
     const [showToolbar, setShowToolbar] = useState(false);
+    const [editingLine, setEditingLine] = useState<number | null>(null);
+    const lineRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    // Auto-resize textarea
-    useEffect(() => {
-        if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = Math.max(80, textareaRef.current.scrollHeight) + 'px';
+    const handleContainerClick = () => {
+        if (!isFocused) {
+            setIsFocused(true);
+            // Focus last line or create new one
+            const lines = value.split('\n');
+            setEditingLine(lines.length - 1);
         }
-    }, [value]);
-
-    const handleFocus = () => setIsFocused(true);
+    };
 
     const handleBlur = (e: React.FocusEvent) => {
         if (containerRef.current?.contains(e.relatedTarget as Node)) return;
         setIsFocused(false);
         setShowToolbar(false);
+        setEditingLine(null);
     };
 
-    // Insert markdown around selection or at cursor
-    const insertMarkdown = useCallback((prefix: string, suffix: string = '') => {
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const selectedText = value.substring(start, end);
-        const beforeText = value.substring(0, start);
-        const afterText = value.substring(end);
-
-        let newValue: string;
-        let newCursorPos: number;
-
-        if (selectedText) {
-            newValue = beforeText + prefix + selectedText + suffix + afterText;
-            newCursorPos = start + prefix.length + selectedText.length + suffix.length;
-        } else {
-            newValue = beforeText + prefix + suffix + afterText;
-            newCursorPos = start + prefix.length;
-        }
-
-        onChange(newValue);
-        setTimeout(() => {
-            textarea.focus();
-            textarea.setSelectionRange(newCursorPos, newCursorPos);
-        }, 0);
-    }, [value, onChange]);
-
-    // Insert prefix at start of current line
-    const insertLinePrefix = useCallback((prefix: string) => {
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-
-        const start = textarea.selectionStart;
-        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
-        const beforeLine = value.substring(0, lineStart);
-        const afterLineStart = value.substring(lineStart);
-
-        const newValue = beforeLine + prefix + afterLineStart;
-        onChange(newValue);
-
-        setTimeout(() => {
-            textarea.focus();
-            textarea.setSelectionRange(start + prefix.length, start + prefix.length);
-        }, 0);
-    }, [value, onChange]);
-
-    // Auto-format markdown shortcuts
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const newValue = e.target.value;
-        const textarea = textareaRef.current;
-        if (!textarea) {
-            onChange(newValue);
-            return;
-        }
-
-        const cursorPos = textarea.selectionStart;
-        const textBeforeCursor = newValue.substring(0, cursorPos);
-        const lineStart = textBeforeCursor.lastIndexOf('\n') + 1;
-        const currentLine = textBeforeCursor.substring(lineStart);
-
-        // Auto-format on space
-        if (newValue[cursorPos - 1] === ' ') {
-            const beforeLine = newValue.substring(0, lineStart);
-            const afterCursor = newValue.substring(cursorPos);
-
-            // [] or [ ] -> checkbox
-            if (currentLine === '[] ' || currentLine === '[ ] ') {
-                onChange(beforeLine + '- [ ] ' + afterCursor);
-                setTimeout(() => textarea.setSelectionRange(lineStart + 6, lineStart + 6), 0);
-                return;
-            }
-            // - or * -> bullet
-            if (currentLine === '- ' || currentLine === '* ') {
-                onChange(beforeLine + '• ' + afterCursor);
-                setTimeout(() => textarea.setSelectionRange(lineStart + 2, lineStart + 2), 0);
-                return;
-            }
-        }
-
-        onChange(newValue);
-    };
-
-    // Handle keyboard shortcuts
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        const isMod = e.metaKey || e.ctrlKey;
-        const textarea = textareaRef.current;
-
-        if (isMod && e.key === 'b') {
-            e.preventDefault();
-            insertMarkdown('**', '**');
-        } else if (isMod && e.key === 'i') {
-            e.preventDefault();
-            insertMarkdown('*', '*');
-        } else if (e.key === 'Enter' && textarea) {
-            const cursorPos = textarea.selectionStart;
-            const textBeforeCursor = value.substring(0, cursorPos);
-            const lineStart = textBeforeCursor.lastIndexOf('\n') + 1;
-            const currentLine = textBeforeCursor.substring(lineStart);
-
-            // Auto-continue bullets
-            if (/^• .+/.test(currentLine)) {
-                e.preventDefault();
-                const afterCursor = value.substring(cursorPos);
-                onChange(value.substring(0, cursorPos) + '\n• ' + afterCursor);
-                setTimeout(() => textarea.setSelectionRange(cursorPos + 3, cursorPos + 3), 0);
-                return;
-            }
-            // Empty bullet - remove it
-            if (currentLine === '• ' || currentLine === '• ') {
-                e.preventDefault();
-                onChange(value.substring(0, lineStart) + value.substring(cursorPos));
-                setTimeout(() => textarea.setSelectionRange(lineStart, lineStart), 0);
-                return;
-            }
-            // Auto-continue checkboxes
-            if (/^- \[[ x]\] .+/.test(currentLine)) {
-                e.preventDefault();
-                const afterCursor = value.substring(cursorPos);
-                onChange(value.substring(0, cursorPos) + '\n- [ ] ' + afterCursor);
-                setTimeout(() => textarea.setSelectionRange(cursorPos + 7, cursorPos + 7), 0);
-                return;
-            }
-            // Empty checkbox - remove it
-            if (/^- \[[ x]\] ?$/.test(currentLine)) {
-                e.preventDefault();
-                onChange(value.substring(0, lineStart) + value.substring(cursorPos));
-                setTimeout(() => textarea.setSelectionRange(lineStart, lineStart), 0);
-                return;
-            }
-            // Auto-continue numbered lists
-            const numMatch = currentLine.match(/^(\d+)\. .+/);
-            if (numMatch) {
-                e.preventDefault();
-                const nextNum = parseInt(numMatch[1]) + 1;
-                const afterCursor = value.substring(cursorPos);
-                const prefix = `\n${nextNum}. `;
-                onChange(value.substring(0, cursorPos) + prefix + afterCursor);
-                setTimeout(() => textarea.setSelectionRange(cursorPos + prefix.length, cursorPos + prefix.length), 0);
-                return;
-            }
-        } else if (e.key === 'Tab') {
-            e.preventDefault();
-            insertMarkdown('  ');
-        }
-    };
-
-    // Toggle checkbox in value
+    // Toggle checkbox
     const toggleCheckbox = (lineIndex: number) => {
         const lines = value.split('\n');
         const line = lines[lineIndex];
@@ -198,88 +65,255 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         onChange(lines.join('\n'));
     };
 
-    // Render preview with interactive checkboxes
-    const renderPreview = () => {
-        if (!value) return null;
+    // Handle line text change
+    const handleLineChange = (lineIndex: number, newContent: string, prefix: string = '') => {
+        const lines = value.split('\n');
 
-        return value.split('\n').map((line, i) => {
-            // Unchecked checkbox
-            if (line.startsWith('- [ ] ')) {
-                return (
-                    <div key={i} className="flex items-start gap-2 my-0.5">
-                        <button
-                            type="button"
-                            onClick={() => toggleCheckbox(i)}
-                            className="mt-1 w-4 h-4 rounded border-2 border-stone-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 hover:border-accent-leather dark:hover:border-accent-warm transition-colors flex-shrink-0"
-                        />
-                        <span className="text-stone-700 dark:text-gray-300">{line.substring(6)}</span>
-                    </div>
-                );
-            }
-            // Checked checkbox
-            if (line.startsWith('- [x] ')) {
-                return (
-                    <div key={i} className="flex items-start gap-2 my-0.5">
-                        <button
-                            type="button"
-                            onClick={() => toggleCheckbox(i)}
-                            className="mt-1 w-4 h-4 rounded border-2 border-accent-leather dark:border-accent-warm bg-accent-leather dark:bg-accent-warm flex-shrink-0 flex items-center justify-center"
-                        >
-                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </button>
-                        <span className="text-stone-400 dark:text-zinc-500 line-through">{line.substring(6)}</span>
-                    </div>
-                );
-            }
-            // Bullet
-            if (line.startsWith('• ')) {
-                return <div key={i} className="flex items-start gap-2 my-0.5"><span className="text-accent-leather">•</span><span className="text-stone-700 dark:text-gray-300">{line.substring(2)}</span></div>;
-            }
-            // Headers
-            if (line.startsWith('### ')) return <h3 key={i} className="text-base font-semibold text-stone-800 dark:text-gray-200 mt-2">{line.substring(4)}</h3>;
-            if (line.startsWith('## ')) return <h2 key={i} className="text-lg font-bold text-stone-800 dark:text-gray-200 mt-2">{line.substring(3)}</h2>;
-            if (line.startsWith('# ')) return <h1 key={i} className="text-xl font-bold text-stone-800 dark:text-gray-200 mt-2">{line.substring(2)}</h1>;
-            // Quote
-            if (line.startsWith('> ')) return <blockquote key={i} className="border-l-3 border-accent-leather pl-3 text-stone-500 dark:text-zinc-400 italic my-1">{line.substring(2)}</blockquote>;
-            // HR
-            if (line === '---') return <hr key={i} className="border-t border-stone-200 dark:border-zinc-700 my-2" />;
-            // Regular text
-            if (!line) return <br key={i} />;
-            return <p key={i} className="text-stone-700 dark:text-gray-300 my-0.5">{line}</p>;
-        });
+        // Auto-format shortcuts at start of line
+        if (newContent === '[]' || newContent === '[ ]') {
+            lines[lineIndex] = '- [ ] ';
+            onChange(lines.join('\n'));
+            return;
+        }
+        if (newContent === '-' || newContent === '*') {
+            // Don't convert yet, wait for space
+        }
+        if (newContent.startsWith('[] ') || newContent.startsWith('[ ] ')) {
+            const rest = newContent.replace(/^\[\] ?|^\[ \] ?/, '');
+            lines[lineIndex] = '- [ ] ' + rest;
+            onChange(lines.join('\n'));
+            return;
+        }
+        if (newContent.startsWith('- ') && !newContent.startsWith('- [')) {
+            lines[lineIndex] = '• ' + newContent.substring(2);
+            onChange(lines.join('\n'));
+            return;
+        }
+        if (newContent.startsWith('* ')) {
+            lines[lineIndex] = '• ' + newContent.substring(2);
+            onChange(lines.join('\n'));
+            return;
+        }
+
+        lines[lineIndex] = prefix + newContent;
+        onChange(lines.join('\n'));
     };
 
+    // Handle keyboard events
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, lineIndex: number) => {
+        const lines = value.split('\n');
+        const line = lines[lineIndex];
+        const parsed = parseLine(line);
+
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            // Continue list patterns
+            let newLinePrefix = '';
+            if (parsed.type === 'checkbox' || parsed.type === 'checked') {
+                if (!parsed.content) {
+                    // Empty checkbox - remove it
+                    lines.splice(lineIndex, 1);
+                    onChange(lines.join('\n'));
+                    setEditingLine(Math.max(0, lineIndex - 1));
+                    return;
+                }
+                newLinePrefix = '- [ ] ';
+            } else if (parsed.type === 'bullet') {
+                if (!parsed.content) {
+                    lines.splice(lineIndex, 1);
+                    onChange(lines.join('\n'));
+                    setEditingLine(Math.max(0, lineIndex - 1));
+                    return;
+                }
+                newLinePrefix = '• ';
+            }
+
+            lines.splice(lineIndex + 1, 0, newLinePrefix);
+            onChange(lines.join('\n'));
+            setEditingLine(lineIndex + 1);
+        } else if (e.key === 'Backspace' && !parsed.content) {
+            e.preventDefault();
+            if (lineIndex > 0 || lines.length > 1) {
+                lines.splice(lineIndex, 1);
+                onChange(lines.join('\n') || '');
+                setEditingLine(Math.max(0, lineIndex - 1));
+            }
+        } else if (e.key === 'ArrowUp' && lineIndex > 0) {
+            e.preventDefault();
+            setEditingLine(lineIndex - 1);
+        } else if (e.key === 'ArrowDown' && lineIndex < lines.length - 1) {
+            e.preventDefault();
+            setEditingLine(lineIndex + 1);
+        }
+    };
+
+    // Focus effect
+    useEffect(() => {
+        if (editingLine !== null && lineRefs.current[editingLine]) {
+            lineRefs.current[editingLine]?.focus();
+        }
+    }, [editingLine]);
+
+    // Insert at cursor position
+    const insertLinePrefix = useCallback((prefix: string) => {
+        const lines = value.split('\n');
+        lines.push(prefix);
+        onChange(lines.join('\n'));
+        setEditingLine(lines.length - 1);
+        setIsFocused(true);
+    }, [value, onChange]);
+
     const toolbarButtons = [
-        { icon: Bold, action: () => insertMarkdown('**', '**'), title: 'Bold' },
-        { icon: Italic, action: () => insertMarkdown('*', '*'), title: 'Italic' },
+        { icon: Bold, action: () => { }, title: 'Bold' },
+        { icon: Italic, action: () => { }, title: 'Italic' },
         { icon: Heading2, action: () => insertLinePrefix('## '), title: 'Heading' },
         { icon: List, action: () => insertLinePrefix('• '), title: 'Bullet' },
         { icon: CheckSquare, action: () => insertLinePrefix('- [ ] '), title: 'Checkbox' },
         { icon: ListOrdered, action: () => insertLinePrefix('1. '), title: 'Number' },
         { icon: Quote, action: () => insertLinePrefix('> '), title: 'Quote' },
-        { icon: Minus, action: () => insertMarkdown('\n---\n'), title: 'Line' },
+        { icon: Minus, action: () => insertLinePrefix('---'), title: 'Line' },
     ];
+
+    const lines = value ? value.split('\n') : [''];
+
+    // Render a single line
+    const renderLine = (line: string, index: number) => {
+        const parsed = parseLine(line);
+
+        // Checkbox unchecked
+        if (parsed.type === 'checkbox') {
+            return (
+                <div key={index} className="flex items-center gap-2 min-h-[28px] group">
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggleCheckbox(index); }}
+                        className="w-[18px] h-[18px] rounded-[4px] border-2 border-stone-300 dark:border-zinc-500 bg-white dark:bg-zinc-800 hover:border-accent-leather dark:hover:border-accent-warm transition-all flex-shrink-0 shadow-sm"
+                    />
+                    <input
+                        ref={el => lineRefs.current[index] = el}
+                        type="text"
+                        value={parsed.content}
+                        onChange={(e) => handleLineChange(index, e.target.value, '- [ ] ')}
+                        onKeyDown={(e) => handleKeyDown(e, index)}
+                        onFocus={() => { setIsFocused(true); setEditingLine(index); }}
+                        onBlur={handleBlur}
+                        className="flex-1 bg-transparent border-none outline-none text-stone-700 dark:text-gray-200 placeholder-stone-400"
+                        placeholder="Task..."
+                    />
+                </div>
+            );
+        }
+
+        // Checkbox checked
+        if (parsed.type === 'checked') {
+            return (
+                <div key={index} className="flex items-center gap-2 min-h-[28px] group">
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggleCheckbox(index); }}
+                        className="w-[18px] h-[18px] rounded-[4px] border-2 border-accent-leather dark:border-accent-warm bg-accent-leather dark:bg-accent-warm flex-shrink-0 flex items-center justify-center shadow-sm"
+                    >
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <input
+                        ref={el => lineRefs.current[index] = el}
+                        type="text"
+                        value={parsed.content}
+                        onChange={(e) => handleLineChange(index, e.target.value, '- [x] ')}
+                        onKeyDown={(e) => handleKeyDown(e, index)}
+                        onFocus={() => { setIsFocused(true); setEditingLine(index); }}
+                        onBlur={handleBlur}
+                        className="flex-1 bg-transparent border-none outline-none text-stone-400 dark:text-zinc-500 line-through placeholder-stone-300"
+                        placeholder=""
+                    />
+                </div>
+            );
+        }
+
+        // Bullet point
+        if (parsed.type === 'bullet') {
+            return (
+                <div key={index} className="flex items-center gap-2 min-h-[28px]">
+                    <span className="w-[18px] text-center text-accent-leather dark:text-accent-warm font-bold text-lg">•</span>
+                    <input
+                        ref={el => lineRefs.current[index] = el}
+                        type="text"
+                        value={parsed.content}
+                        onChange={(e) => handleLineChange(index, e.target.value, '• ')}
+                        onKeyDown={(e) => handleKeyDown(e, index)}
+                        onFocus={() => { setIsFocused(true); setEditingLine(index); }}
+                        onBlur={handleBlur}
+                        className="flex-1 bg-transparent border-none outline-none text-stone-700 dark:text-gray-200"
+                        placeholder=""
+                    />
+                </div>
+            );
+        }
+
+        // Header
+        if (line.startsWith('## ')) {
+            return (
+                <h2 key={index} className="text-lg font-bold text-stone-800 dark:text-gray-100 my-1">
+                    {line.substring(3)}
+                </h2>
+            );
+        }
+
+        // Quote
+        if (line.startsWith('> ')) {
+            return (
+                <blockquote key={index} className="border-l-3 border-accent-leather pl-3 text-stone-500 dark:text-zinc-400 italic my-1">
+                    {line.substring(2)}
+                </blockquote>
+            );
+        }
+
+        // HR
+        if (line === '---') {
+            return <hr key={index} className="border-t border-stone-200 dark:border-zinc-700 my-2" />;
+        }
+
+        // Regular text line
+        return (
+            <div key={index} className="min-h-[28px]">
+                <input
+                    ref={el => lineRefs.current[index] = el}
+                    type="text"
+                    value={line}
+                    onChange={(e) => handleLineChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, index)}
+                    onFocus={() => { setIsFocused(true); setEditingLine(index); }}
+                    onBlur={handleBlur}
+                    className="w-full bg-transparent border-none outline-none text-stone-700 dark:text-gray-200"
+                    placeholder=""
+                />
+            </div>
+        );
+    };
 
     return (
         <div ref={containerRef} className={`relative w-full ${className}`}>
-            {/* Toolbar - at TOP of text box */}
+            {/* Polished Format Button Container - Apple-style subtle glass */}
             {isFocused && (
-                <div className="mb-2">
+                <div className="mb-3">
                     {!showToolbar ? (
-                        <button
-                            type="button"
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => setShowToolbar(true)}
-                            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-stone-400 hover:text-stone-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-all"
-                            title="Show formatting"
-                        >
-                            <Type size={14} />
-                            <span>Format</span>
-                        </button>
+                        <div className="inline-flex items-center px-2.5 py-1.5 rounded-lg bg-stone-50/80 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-700/40 backdrop-blur-sm shadow-sm">
+                            <button
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => setShowToolbar(true)}
+                                className="flex items-center gap-1.5 text-xs font-medium text-stone-500 dark:text-zinc-400 hover:text-stone-700 dark:hover:text-zinc-200 transition-colors"
+                                title="Show formatting"
+                            >
+                                <Type size={13} />
+                                <span>Format</span>
+                            </button>
+                        </div>
                     ) : (
-                        <div className="flex items-center gap-px p-1 bg-stone-50 dark:bg-zinc-800/80 rounded-lg border border-stone-200/50 dark:border-zinc-700/50 w-fit">
+                        <div className="inline-flex items-center gap-0.5 px-1.5 py-1 rounded-lg bg-stone-50/90 dark:bg-zinc-800/80 border border-stone-200/60 dark:border-zinc-700/40 backdrop-blur-sm shadow-sm">
                             {toolbarButtons.map((btn, i) => (
                                 <button
                                     key={i}
@@ -287,16 +321,17 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={btn.action}
                                     title={btn.title}
-                                    className="p-1.5 rounded text-stone-500 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700 hover:text-stone-700 dark:hover:text-white transition-all"
+                                    className="p-1.5 rounded-md text-stone-500 dark:text-zinc-400 hover:bg-stone-200/80 dark:hover:bg-zinc-700/80 hover:text-stone-700 dark:hover:text-white transition-all"
                                 >
                                     <btn.icon size={14} />
                                 </button>
                             ))}
+                            <div className="w-px h-5 bg-stone-200 dark:bg-zinc-700 mx-1" />
                             <button
                                 type="button"
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={() => setShowToolbar(false)}
-                                className="p-1.5 rounded text-stone-400 hover:bg-stone-200 dark:hover:bg-zinc-700 ml-1"
+                                className="p-1.5 rounded-md text-stone-400 hover:bg-stone-200/80 dark:hover:bg-zinc-700/80"
                             >
                                 <X size={14} />
                             </button>
@@ -305,50 +340,23 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 </div>
             )}
 
-            {/* Editor or Preview */}
-            <div className="relative min-h-[80px]">
-                {isFocused ? (
-                    <>
-                        {/* Animated placeholder */}
-                        {!value && animatedPlaceholder && animatedPlaceholder.length > 0 && (
-                            <div className="absolute top-0 left-0 pointer-events-none z-10">
-                                <TypewriterPlaceholder
-                                    prompts={animatedPlaceholder}
-                                    className="text-stone-400 dark:text-zinc-500 text-base leading-relaxed"
-                                />
-                            </div>
-                        )}
-                        <textarea
-                            ref={textareaRef}
-                            value={value}
-                            onChange={handleChange}
-                            onKeyDown={handleKeyDown}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            className="w-full bg-transparent border-none outline-none resize-none text-base leading-relaxed text-stone-800 dark:text-gray-100 placeholder-transparent focus:ring-0 min-h-[80px]"
-                            spellCheck={false}
+            {/* Editor Content */}
+            <div
+                onClick={handleContainerClick}
+                className="min-h-[80px] cursor-text space-y-0.5"
+            >
+                {/* Animated placeholder */}
+                {!value && animatedPlaceholder && animatedPlaceholder.length > 0 && !isFocused && (
+                    <div className="pointer-events-none">
+                        <TypewriterPlaceholder
+                            prompts={animatedPlaceholder}
+                            className="text-stone-400 dark:text-zinc-500 text-base"
                         />
-                    </>
-                ) : (
-                    <div
-                        onClick={() => {
-                            setIsFocused(true);
-                            setTimeout(() => textareaRef.current?.focus(), 0);
-                        }}
-                        className="cursor-text min-h-[80px]"
-                    >
-                        {value ? (
-                            renderPreview()
-                        ) : (
-                            animatedPlaceholder && animatedPlaceholder.length > 0 && (
-                                <TypewriterPlaceholder
-                                    prompts={animatedPlaceholder}
-                                    className="text-stone-400 dark:text-zinc-500 text-base leading-relaxed"
-                                />
-                            )
-                        )}
                     </div>
                 )}
+
+                {/* Lines */}
+                {(value || isFocused) && lines.map((line, i) => renderLine(line, i))}
             </div>
         </div>
     );
